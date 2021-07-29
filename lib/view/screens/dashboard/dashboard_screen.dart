@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:grocery_delivery_boy/view/screens/maps/map_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:grocery_delivery_boy/localization/language_constrants.dart';
 import 'package:grocery_delivery_boy/notification/my_notification.dart';
@@ -26,6 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
 
     _screens = [
+      MapScreen(),
       HomeScreen(),
       OrderHistoryScreen(),
       ProfileScreen(),
@@ -65,8 +67,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           type: BottomNavigationBarType.fixed,
           items: [
             _barItem(Icons.home, getTranslated('home', context), 0),
-            _barItem(Icons.history, getTranslated('order_history', context), 1),
-            _barItem(Icons.person, getTranslated('profile', context), 2),
+            _barItem(Icons.view_list, getTranslated('home', context), 1),
+            _barItem(Icons.history, getTranslated('order_history', context), 2),
+            _barItem(Icons.person, getTranslated('profile', context), 3),
           ],
           onTap: (int index) {
             _setPage(index);

@@ -6,13 +6,13 @@ import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart'
 import 'package:grocery_delivery_boy/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class OrderRepo {
+class LocationOrderRepo {
   final DioClient dioClient;
   final SharedPreferences sharedPreferences;
 
-  OrderRepo({@required this.dioClient, @required this.sharedPreferences});
+  LocationOrderRepo({@required this.dioClient, @required this.sharedPreferences});
 
-  Future<ApiResponse> getAllOrders() async {
+  Future<ApiResponse> getAllLocationOrders() async {
     try {
       final response = await dioClient.get('${AppConstants.CURRENT_ORDERS_URI}${sharedPreferences.get(AppConstants.TOKEN)}');
       return ApiResponse.withSuccess(response);
@@ -21,16 +21,7 @@ class OrderRepo {
     }
   }
 
-  Future<ApiResponse> getPendingOrders() async {
-    try {
-      final response = await dioClient.get('${AppConstants.PENDING_ORDERS_URI}${sharedPreferences.get(AppConstants.TOKEN)}');
-      return ApiResponse.withSuccess(response);
-    } catch (e) {
-      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
-    }
-  }
-
-  Future<ApiResponse> getOrderDetails({String orderID}) async {
+  Future<ApiResponse> getLocationOrderDetails({String orderID}) async {
     try {
       final response = await dioClient.get('${AppConstants.ORDER_DETAILS_URI}${sharedPreferences.get(AppConstants.TOKEN)}&order_id=$orderID');
       return ApiResponse.withSuccess(response);

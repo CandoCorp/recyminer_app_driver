@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:grocery_delivery_boy/provider/location_order_provider.dart';
 import 'package:grocery_delivery_boy/utill/app_constants.dart';
 import 'package:grocery_delivery_boy/localization/app_localization.dart';
 import 'package:grocery_delivery_boy/notification/my_notification.dart';
@@ -40,6 +41,7 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (context) => di.sl<ProfileProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<OrderProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<TrackerProvider>()),
+      ChangeNotifierProvider(create: (context) => di.sl<LocationOrderProvider>())
     ],
     child: MyApp(),
   ));

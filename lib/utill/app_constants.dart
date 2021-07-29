@@ -11,6 +11,7 @@ class AppConstants {
   static const String NOTIFICATION_URI = '/api/v1/notifications';
   static const String UPDATE_PROFILE_URI = '/api/v1/customer/update-profile';
   static const String CURRENT_ORDERS_URI = '/api/v1/delivery-man/current-orders?token=';
+  static const String PENDING_ORDERS_URI = '/api/v1/delivery-man/pending-orders?token=';
   static const String ORDER_DETAILS_URI = '/api/v1/delivery-man/order-details?token=';
   static const String ORDER_HISTORY_URI = '/api/v1/delivery-man/all-orders?token=';
   static const String RECORD_LOCATION_URI = '/api/v1/delivery-man/record-location-data';
@@ -19,6 +20,7 @@ class AppConstants {
   static const String TOKEN_URI = '/api/v1/delivery-man/update-fcm-token';
   static const String TIMESLOT_URI = '/api/v1/timeSlot';
 
+  static const String AVAILABLE_ORDERS_URI = '/api/v1/pending-orders/location';
   // Shared Key
   static const String THEME = 'theme';
   static const String TOKEN = 'token';

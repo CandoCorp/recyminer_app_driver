@@ -44,6 +44,25 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future getPendingOrders(BuildContext context) async {
+    ApiResponse apiResponse = await orderRepo.getPendingOrders();
+    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+      _currentOrders = [];
+      _currentOrdersReverse = [];
+      apiResponse.response.data.forEach((order) {
+        OrderModel _orderModel = OrderModel.fromJson(order);
+        if(_orderModel.orderStatus == 'pending') {
+          _currentOrdersReverse.add(_orderModel);
+        }
+
+      });
+      _currentOrders = new List.from(_currentOrdersReverse.reversed);
+    } else {
+      ApiChecker.checkApi(context, apiResponse);
+    }
+    notifyListeners();
+  }
+
   // get order details
   OrderDetailsModel _orderDetailsModel = OrderDetailsModel();
 
