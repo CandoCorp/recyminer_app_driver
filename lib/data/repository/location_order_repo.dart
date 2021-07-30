@@ -14,7 +14,7 @@ class LocationOrderRepo {
 
   Future<ApiResponse> getAllLocationOrders() async {
     try {
-      final response = await dioClient.get('${AppConstants.CURRENT_ORDERS_URI}${sharedPreferences.get(AppConstants.TOKEN)}');
+      final response = await dioClient.get('${AppConstants.AVAILABLE_ORDERS_URI}');
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));

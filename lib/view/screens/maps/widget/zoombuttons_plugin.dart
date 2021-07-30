@@ -3,8 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 
 class ZoomButtonsPluginOption extends LayerOptions {
-  final int minZoom;
-  final int maxZoom;
+  final double minZoom;
+  final double maxZoom;
   final bool mini;
   final double padding;
   final Alignment alignment;
@@ -17,8 +17,8 @@ class ZoomButtonsPluginOption extends LayerOptions {
 
   ZoomButtonsPluginOption({
     Key key,
-    this.minZoom = 1,
-    this.maxZoom = 18,
+    this.minZoom = 1.0,
+    this.maxZoom = 18.0,
     this.mini = true,
     this.padding = 2.0,
     this.alignment = Alignment.bottomRight,
@@ -73,14 +73,13 @@ class ZoomButtons extends StatelessWidget {
             child: FloatingActionButton(
               heroTag: 'zoomInButton',
               mini: zoomButtonsOpts.mini,
-              backgroundColor:
-              zoomButtonsOpts.zoomInColor ?? Colors.lightGreen,
+              backgroundColor: zoomButtonsOpts.zoomInColor ?? Colors.black12,
               onPressed: () {
                 var bounds = map.getBounds();
                 var centerZoom = map.getBoundsCenterZoom(bounds, options);
-                var zoom = centerZoom.zoom + 1;
+                double zoom = centerZoom.zoom + 1.0;
                 if (zoom < zoomButtonsOpts.minZoom) {
-                  zoom = (zoomButtonsOpts.minZoom as num) as double;
+                  zoom = zoomButtonsOpts.minZoom;
                 } else {
                   map.move(centerZoom.center, zoom,
                       source: MapEventSource.custom);
@@ -96,14 +95,13 @@ class ZoomButtons extends StatelessWidget {
             child: FloatingActionButton(
               heroTag: 'zoomOutButton',
               mini: zoomButtonsOpts.mini,
-              backgroundColor: zoomButtonsOpts.zoomOutColor ??
-                  Theme.of(context).primaryColor,
+              backgroundColor: zoomButtonsOpts.zoomOutColor ?? Colors.black12,
               onPressed: () {
                 var bounds = map.getBounds();
                 var centerZoom = map.getBoundsCenterZoom(bounds, options);
-                var zoom = centerZoom.zoom - 1;
+                var zoom = centerZoom.zoom - 1.0;
                 if (zoom > zoomButtonsOpts.maxZoom) {
-                  zoom = (zoomButtonsOpts.maxZoom as num) as double;
+                  zoom = zoomButtonsOpts.maxZoom;
                 } else {
                   map.move(centerZoom.center, zoom,
                       source: MapEventSource.custom);

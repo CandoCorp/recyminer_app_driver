@@ -14,6 +14,12 @@ import 'package:grocery_delivery_boy/data/repository/response_model.dart';
 import 'package:grocery_delivery_boy/helper/api_checker.dart';
 
 import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
+import '../data/model/response/order_model.dart';
 
 class LocationOrderProvider with ChangeNotifier {
   final LocationOrderRepo locationOrderRepo;
@@ -43,6 +49,23 @@ class LocationOrderProvider with ChangeNotifier {
       ApiChecker.checkApi(context, apiResponse);
     }
     notifyListeners();
+  }
+
+  OrderModel _orderModel = OrderModel();
+  OrderModel get orderModel => _orderModel;
+
+  Future<OrderModel> getOrderFromLocation(BuildContext context, String orderId) async {
+    _orderModel = null;
+    ApiResponse apiResponse = await locationOrderRepo.getLocationOrderDetails(orderID: orderId);
+    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+      apiResponse.response.data.forEach((order) {
+        _orderModel = OrderModel.fromJson(order);
+      });
+    } else {
+      ApiChecker.checkApi(context, apiResponse);
+    }
+    notifyListeners();
+    return _orderModel;
   }
 
   // get order details

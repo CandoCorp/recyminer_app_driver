@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:grocery_delivery_boy/data/model/response/location_order_model.dart';
 import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
@@ -24,6 +25,19 @@ import 'package:grocery_delivery_boy/view/screens/order/widget/permission_dialog
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/model/response/location_order_model.dart';
+import '../../../data/model/response/location_order_model.dart';
+import '../../../data/model/response/location_order_model.dart';
+import '../../../data/model/response/order_model.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+import '../../../provider/location_order_provider.dart';
+
 class MapScreen extends StatelessWidget {
   // This widget is the root of your application.
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
@@ -31,7 +45,7 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<LocationOrderProvider>(context, listen: false).getAllAvailableOrders(context);
+    Provider.of<OrderProvider>(context, listen: false).getAllOrders(context);
     Provider.of<ProfileProvider>(context, listen: false).getUserInfo(context);
 
     return Scaffold(
@@ -40,26 +54,31 @@ class MapScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).cardColor,
         leadingWidth: 0,
         actions: [
-          Consumer<LocationOrderProvider>(
+          Consumer<OrderProvider>(
             builder: (context, orderProvider, child) {
-              if(orderProvider.availableOrders.length == 0) {
-                return IconButton(icon: Icon(Icons.refresh, color: Theme.of(context).textTheme.bodyText1.color),
-                    onPressed: () {
-                      orderProvider.refresh(context);
+              if (orderProvider.currentOrders != null) {
+                for (OrderModel order in orderProvider.currentOrders) {
+                  if (order.orderStatus == 'out_for_delivery') {
+                    _checkPermission(context, () {
+                      Provider.of<TrackerProvider>(context, listen: false)
+                          .setOrderID(order.id);
+                      Provider.of<TrackerProvider>(context, listen: false)
+                          .startLocationService();
                     });
-                for(LocationOrderModel order in orderProvider.availableOrders) {
-//                  if(order.orderStatus == 'out_for_delivery') {
-//                    _checkPermission(context, () {
-//                      Provider.of<TrackerProvider>(context, listen: false).setOrderID(order.id);
-//                      Provider.of<TrackerProvider>(context, listen: false).startLocationService();
-//                    });
-//                    break;
-//                  }
+                    break;
+                  }
                 }
-
               }
-              return SizedBox.shrink();
-
+              return orderProvider.currentOrders.length > 0
+                  ? SizedBox.shrink()
+                  : IconButton(icon: Icon(Icons.refresh, color: Theme
+                  .of(context)
+                  .textTheme
+                  .bodyText1
+                  .color),
+                  onPressed: () {
+                    orderProvider.refresh(context);
+                  });
             },
           ),
           PopupMenuButton<String>(
@@ -125,22 +144,13 @@ class MapScreen extends StatelessWidget {
       ),
       drawer: buildDrawer(context, route),
       body: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(2.0),
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: Text(''),
-            ),
             Flexible(child: MapWidget())
           ],
         ),
       )
-//      Consumer<OrderProvider>(
-//          builder: (context, orderProvider, child) {
-////            return SimpleMapWithPopups();
-//            return MapWidget();
-//          }),
     );
   }
   void _checkPermission(BuildContext context, Function callback) async {
@@ -174,12 +184,21 @@ class MapWidget extends StatefulWidget {
 
 class _MapWidgetState extends State<MapWidget> {
   final PopupController _popupController = PopupController();
+  final MapController _mapController = MapController();
+
+  LocationOrderProvider provider;
+
+  Position _currentPosition;
+  LatLng _currentLocation;
+  String _currentAddress;
+
+  // final Geolocator geolocator = Geolocator();
 
   Timer _timer;
-  Marker _marker;
-  List<Marker> markers;
+  List<Marker> markers = [];
 
-  int _markerIndex = 0;
+  double _currentZoom = 4.0;
+  double _maxZoom = 5.0;
 
   int pointIndex;
   List points = [
@@ -191,61 +210,24 @@ class _MapWidgetState extends State<MapWidget> {
   void initState() {
     super.initState();
 
-    _marker = _markers[_markerIndex];
-    _timer = Timer.periodic(Duration(seconds: 1), (_) {
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+    });
+
+    provider = Provider.of<LocationOrderProvider>(context, listen: false);
+
+    _timer = Timer.periodic(Duration(seconds: 10), (_) {
       setState(() {
-        _marker = _markers[_markerIndex];
-        _markerIndex = (_markerIndex + 1) % _markers.length;
+        _fetchDataPoints();
       });
     });
 
-    pointIndex = 0;
-    markers = [
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: points[pointIndex],
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: LatLng(53.3498, -6.2603),
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: LatLng(53.3488, -6.2613),
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: LatLng(53.3488, -6.2613),
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: LatLng(48.8566, 2.3522),
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-      Marker(
-        anchorPos: AnchorPos.align(AnchorAlign.center),
-        height: 30,
-        width: 30,
-        point: LatLng(49.8566, 3.3522),
-        builder: (ctx) => Icon(Icons.pin_drop),
-      ),
-    ];
+    _currentZoom = 5.0;
+    _maxZoom = 15.0;
 
-    super.initState();
+    pointIndex = 0;
+
+    // _getCurrentLocation();
   }
 
   @override
@@ -259,114 +241,246 @@ class _MapWidgetState extends State<MapWidget> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          pointIndex++;
-          if (pointIndex >= points.length) {
-            pointIndex = 0;
-          }
-          setState(() {
-            markers[0] = Marker(
-              point: points[pointIndex],
-              anchorPos: AnchorPos.align(AnchorAlign.center),
-              height: 30,
-              width: 30,
-              builder: (ctx) => Icon(Icons.pin_drop),
-            );
-            markers = List.from(markers);
-          });
+          // pointIndex++;
+          // if (pointIndex >= points.length) {
+          //   pointIndex = 0;
+          // }
+          // setState(() {
+          //   markers[0] = Marker(
+          //     point: points[pointIndex],
+          //     anchorPos: AnchorPos.align(AnchorAlign.center),
+          //     height: 30,
+          //     width: 30,
+          //     builder: (ctx) => Icon(Icons.pin_drop),
+          //   );
+          //   markers = List.from(markers);
+
+          // });
+          Text(markers.length.toString());
         },
         child: Icon(Icons.refresh),
       ),
-      body: FlutterMap(
-        options: MapOptions(
-          center: points[0],
-          zoom: 5,
-          maxZoom: 15,
-          plugins: [
-            MarkerClusterPlugin(),
-//            ZoomButtonsPlugin()
-          ],
-          onTap: (_) => _popupController
-              .hidePopup(), // Hide popup when the map is tapped.
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            subdomains: ['a', 'b', 'c'],
-          ),
-          MarkerLayerOptions(markers: [_marker]),
-          MarkerClusterLayerOptions(
-            maxClusterRadius: 120,
-            size: Size(40, 40),
-            anchor: AnchorPos.align(AnchorAlign.center),
-            fitBoundsOptions: FitBoundsOptions(
-              padding: EdgeInsets.all(50),
-            ),
-            markers: markers,
-            polygonOptions: PolygonOptions(
-                borderColor: Colors.blueAccent,
-                color: Colors.black12,
-                borderStrokeWidth: 3),
-            popupOptions: PopupOptions(
-                popupSnap: PopupSnap.markerTop,
-                popupController: _popupController,
-                popupBuilder: (_, marker) => Container(
-                  width: 200,
-                  height: 100,
-                  color: Colors.white,
-                  child: GestureDetector(
-                    onTap: () => debugPrint('Popup tap!'),
-                    child: Text('Tap')
-//                    OrderWidget(
-//                      orderModel: orderProvider.currentOrders[index],
-//                      index: index,
-//                    ),
+      body: Consumer<LocationOrderProvider>(
+          builder: (context, locationOrder, child) {
+            if(locationOrder.availableOrders != null) {
+              for (LocationOrderModel order in locationOrder.availableOrders) {
+                LatLng _latlng = LatLng(
+                    double.parse(order.latitude),
+                    double.parse(order.longitude)
+                );
+                Marker _marker = Marker(
+                  anchorPos: AnchorPos.align(AnchorAlign.center),
+                  height: 30,
+                  width: 30,
+                  point: _latlng,
+                  builder: (ctx) => Icon(Icons.pin_drop),
+                );
+                markers.add(_marker);
+              }
+              return FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  center: markers != null ? markers.isNotEmpty ? markers[0].point : LatLng(51.5, -0.09) : LatLng(51.5, -0.09),
+                  zoom: _currentZoom,
+                  maxZoom: _maxZoom,
+                  plugins: [
+                    MarkerClusterPlugin(),
+                    ZoomButtonsPlugin()
+                  ],
+                  onTap: (_) => _popupController
+                      .hidePopup(), // Hide popup when the map is tapped.
+                ),
+                layers: [
+                  TileLayerOptions(
+                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains: ['a', 'b', 'c'],
                   ),
-                )),
-            builder: (context, markers) {
-              return FloatingActionButton(
-                onPressed: null,
-                child: Text(markers.length.toString()),
+                  MarkerClusterLayerOptions(
+                    maxClusterRadius: 120,
+                    size: Size(40, 40),
+                    anchor: AnchorPos.align(AnchorAlign.center),
+                    fitBoundsOptions: FitBoundsOptions(
+                      padding: EdgeInsets.all(50),
+                    ),
+                    markers: markers,
+                    polygonOptions: PolygonOptions(
+                        borderColor: Colors.blueAccent,
+                        color: Colors.black12,
+                        borderStrokeWidth: 3),
+                    popupOptions: PopupOptions(
+                        popupSnap: PopupSnap.markerTop,
+                        popupController: _popupController,
+                        popupBuilder: (_, marker) => Container(
+                          width: 200,
+                          height: 100,
+                          color: Colors.white,
+                          child: GestureDetector(
+                              onTap: () => debugPrint('Popup tap!'),
+                              child: Text(markers.length.toString())
+                          ),
+                        )),
+                    builder: (context, markers) {
+                      return FloatingActionButton(
+                        onPressed: null,
+                        child: Text(markers.length.toString()),
+                      );
+                    },
+                  ),
+                ],
+                nonRotatedLayers: [
+                  ZoomButtonsPluginOption(
+                    minZoom: 5,
+                    maxZoom: 15,
+                    mini: false,
+                    padding: 10,
+                    alignment: Alignment.topRight,
+                  ),
+                ],
               );
-            },
-          ),
-        ],
-//        nonRotatedLayers: [
-//          ZoomButtonsPluginOption(
-//            minZoom: 4,
-//            maxZoom: 19,
-//            mini: false,
-//            padding: 10,
-//            alignment: Alignment.topRight,
-//          ),
-//        ],
-      ),
+            }else {
+              return CircularProgressIndicator();
+            }
+      }),
     );
+    // return Scaffold(
+    //   floatingActionButton: FloatingActionButton(
+    //     onPressed: () {
+    //       // pointIndex++;
+    //       // if (pointIndex >= points.length) {
+    //       //   pointIndex = 0;
+    //       // }
+    //       // setState(() {
+    //       //   markers[0] = Marker(
+    //       //     point: points[pointIndex],
+    //       //     anchorPos: AnchorPos.align(AnchorAlign.center),
+    //       //     height: 30,
+    //       //     width: 30,
+    //       //     builder: (ctx) => Icon(Icons.pin_drop),
+    //       //   );
+    //       //   markers = List.from(markers);
+    //
+    //       // });
+    //       Text(markers.length.toString());
+    //     },
+    //     child: Icon(Icons.refresh),
+    //   ),
+    //   body: FlutterMap(
+    //     mapController: _mapController,
+    //     options: MapOptions(
+    //       center: markers != null ? markers.isNotEmpty ? markers[0].point : LatLng(51.5, -0.09) : LatLng(51.5, -0.09),
+    //       zoom: _currentZoom,
+    //       maxZoom: _maxZoom,
+    //       plugins: [
+    //         MarkerClusterPlugin(),
+    //         ZoomButtonsPlugin()
+    //       ],
+    //       onTap: (_) => _popupController
+    //           .hidePopup(), // Hide popup when the map is tapped.
+    //     ),
+    //     layers: [
+    //       TileLayerOptions(
+    //         urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    //         subdomains: ['a', 'b', 'c'],
+    //       ),
+    //       MarkerClusterLayerOptions(
+    //         maxClusterRadius: 120,
+    //         size: Size(40, 40),
+    //         anchor: AnchorPos.align(AnchorAlign.center),
+    //         fitBoundsOptions: FitBoundsOptions(
+    //           padding: EdgeInsets.all(50),
+    //         ),
+    //         markers: markers,
+    //         polygonOptions: PolygonOptions(
+    //             borderColor: Colors.blueAccent,
+    //             color: Colors.black12,
+    //             borderStrokeWidth: 3),
+    //         popupOptions: PopupOptions(
+    //             popupSnap: PopupSnap.markerTop,
+    //             popupController: _popupController,
+    //             popupBuilder: (_, marker) => Container(
+    //               width: 200,
+    //               height: 100,
+    //               color: Colors.white,
+    //               child: GestureDetector(
+    //                   onTap: () => debugPrint('Popup tap!'),
+    //                   child: Text(markers.length.toString())
+    //               ),
+    //             )),
+    //         builder: (context, markers) {
+    //           return FloatingActionButton(
+    //             onPressed: null,
+    //             child: Text(markers.length.toString()),
+    //           );
+    //         },
+    //       ),
+    //     ],
+    //     nonRotatedLayers: [
+    //       ZoomButtonsPluginOption(
+    //         minZoom: 5,
+    //         maxZoom: 15,
+    //         mini: false,
+    //         padding: 10,
+    //         alignment: Alignment.topRight,
+    //       ),
+    //     ],
+    //   )
+    // );
   }
 
-  List<Marker> _markers = [
-    Marker(
-      width: 80.0,
-      height: 80.0,
-      point: LatLng(51.5, -0.09),
-      builder: (ctx) => Container(
-        child: FlutterLogo(),
-      ),
-    ),
-    Marker(
-      width: 80.0,
-      height: 80.0,
-      point: LatLng(53.3498, -6.2603),
-      builder: (ctx) => Container(
-        child: FlutterLogo(),
-      ),
-    ),
-    Marker(
-      width: 80.0,
-      height: 80.0,
-      point: LatLng(48.8566, 2.3522),
-      builder: (ctx) => Container(
-        child: FlutterLogo(),
-      ),
-    ),
-  ];
+  void _fetchDataPoints(){
+    provider.getAllAvailableOrders(context).then((x) {
+      if (provider.availableOrders != null){
+        for (LocationOrderModel order in provider.availableOrders){
+          LatLng _latlng = LatLng(
+              double.parse(order.latitude),
+              double.parse(order.longitude)
+          );
+          Marker _marker = Marker(
+            anchorPos: AnchorPos.align(AnchorAlign.center),
+            height: 30,
+            width: 30,
+            point: _latlng,
+            builder: (ctx) => Icon(Icons.pin_drop),
+          );
+          markers = [];
+          markers.add(_marker);
+          _mapController.move(_currentLocation, _currentZoom);
+        }
+      }
+    }).onError((error, stackTrace) {
+      debugPrint(error);
+    });
+  }
+
+  Future<void> _getCurrentLocation() async{
+
+    // verify permissions
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      await Geolocator.openAppSettings();
+      await Geolocator.openLocationSettings();
+    }
+    // get current position
+    _currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    // get address
+    _currentAddress = await _getGeolocationAddress(_currentPosition);
+  }
+
+  // Method to get Address from position:
+  Future<String> _getGeolocationAddress(Position position) async {
+    // geocoding
+    var places = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    if (places != null && places.isNotEmpty) {
+      final Placemark place = places.first;
+      return "${place.thoroughfare}, ${place.locality}";
+    }
+
+    return "No address available";
+  }
 }
