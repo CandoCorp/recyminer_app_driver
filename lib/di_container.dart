@@ -9,6 +9,7 @@ import 'package:grocery_delivery_boy/data/repository/tracker_repo.dart';
 import 'package:grocery_delivery_boy/provider/auth_provider.dart';
 import 'package:grocery_delivery_boy/provider/localization_provider.dart';
 import 'package:grocery_delivery_boy/provider/language_provider.dart';
+import 'package:grocery_delivery_boy/provider/location_mining_provider.dart';
 import 'package:grocery_delivery_boy/provider/location_order_provider.dart';
 import 'package:grocery_delivery_boy/provider/order_provider.dart';
 import 'package:grocery_delivery_boy/provider/profile_provider.dart';
@@ -20,6 +21,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/datasource/remote/dio/dio_client.dart';
 import 'data/datasource/remote/dio/logging_interceptor.dart';
+import 'data/repository/location_mining_repo.dart';
 
 final sl = GetIt.instance;
 
@@ -34,6 +36,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ProfileRepo(dioClient: sl(), sharedPreferences: sl()));
   sl.registerLazySingleton(() => OrderRepo(dioClient: sl(), sharedPreferences: sl()));
   sl.registerLazySingleton(() => LocationOrderRepo(dioClient: sl(), sharedPreferences: sl()));
+  sl.registerLazySingleton(() => LocationMiningRepo(dioClient: sl(), sharedPreferences: sl()));
   sl.registerLazySingleton(() => TrackerRepo(dioClient: sl(), sharedPreferences: sl()));
 
   // Provider
@@ -46,6 +49,7 @@ Future<void> init() async {
   sl.registerFactory(() => OrderProvider(orderRepo: sl()));
   sl.registerFactory(() => TrackerProvider(trackerRepo: sl()));
   sl.registerFactory(() => LocationOrderProvider(locationOrderRepo: sl()));
+  sl.registerFactory(() => LocationMiningProvider(locationMiningRepo: sl()));
 
   // External
   final sharedPreferences = await SharedPreferences.getInstance();

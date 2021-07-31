@@ -209,13 +209,21 @@ class _MapWidgetState extends State<MapWidget> {
   double _maxZoom = 18.0;
 
   Map _layerStates;
+  ValueNotifier _layerStatesNotifier;
 
   @override
   void initState() {
     super.initState();
 
     _layerStates = { 0: true, 1: true };
-    _markerOrder = {'mining':[], 'recollect':[]};
+    _markerOrder = {'orders':[], 'mining':[]};
+
+    _layerStatesNotifier = new ValueNotifier(_layerStates);
+    _layerStatesNotifier.addListener(() {
+      setState(() {
+        _filterDataPoints();
+      });
+    });
 
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
@@ -226,6 +234,10 @@ class _MapWidgetState extends State<MapWidget> {
           point: _currentLocation,
           key: new Key("0"),
           builder: (ctx) {
+            return Container(
+              key: Key('purple'),
+              child: Icon(Icons.location_history, size: 48,),
+            );
             return Icon(Icons.pin_drop_outlined);
           })
       );
@@ -235,13 +247,26 @@ class _MapWidgetState extends State<MapWidget> {
     _orderProvider = Provider.of<OrderProvider>(context, listen: false);
     _miningProvider = Provider.of<LocationMiningProvider>(context, listen: false);
 
-    provider.addListener(() { setState(() {}); });
-
-    _miningProvider.addListener(() { setState(() {}); });
-
-    _timer = Timer.periodic(Duration(seconds: 60), (_) {
+    provider.addListener(() {
       setState(() {
-        _fetchDataPoints();
+        _repaintOrderDataPoints();
+      });
+    });
+
+    _miningProvider.addListener(() {
+      setState(() {
+        _repaintMiningDataPoints();
+      });
+    });
+
+    _fetchOrderDataPoints(context);
+    _fetchMiningDataPoints(context);
+    _orderProvider.getPendingOrders(context);
+
+    _timer = Timer.periodic(Duration(seconds: 600), (_) {
+      setState(() {
+        _fetchOrderDataPoints(context);
+        _fetchMiningDataPoints(context);
         _orderProvider.getPendingOrders(context);
       });
     });
@@ -251,11 +276,11 @@ class _MapWidgetState extends State<MapWidget> {
   void dispose() {
     super.dispose();
     _timer.cancel();
+    _layerStatesNotifier.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    _fetchDataPoints();
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
     });
@@ -348,7 +373,7 @@ class _MapWidgetState extends State<MapWidget> {
             mini: false,
             padding: 10,
             layerState: _layerStates,
-            mapState: this
+            mapState: _layerStatesNotifier
           )
         ],
       )
@@ -356,89 +381,93 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _fetchOrderDataPoints(BuildContext context){
-    provider.getAllAvailableOrders(context).then((_) {
-      if (provider.availableOrders != null){
-        List _markers = [];
-        for (LocationOrderModel order in provider.availableOrders) {
-          Marker _marker = Marker(
-            anchorPos: AnchorPos.align(AnchorAlign.center),
-            height: 40,
-            width: 40,
-            point: LatLng(
-                double.parse(order.latitude),
-                double.parse(order.longitude)
-            ),
-            key: new Key(order.orderId.toString()),
-            builder: (ctx) {
-              return Column(
-                children: [
-                  FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(
-                      order.orderAmount.toString(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.monetization_on_outlined)
-                ],
-              );
-              // return Icon(Icons.pin_drop);
-            },
-          );
-          _markers.add(_marker);
-        }
-        _markersClustered = List.from(_markers);
-      }
-    }).onError((error, stackTrace) {
-      debugPrint(error);
-    });
+    provider.getAllAvailableOrders(context);
   }
   void _repaintOrderDataPoints(){
-
-  }
-  void _fetchMiningDataPoints(BuildContext context){
-    _miningProvider.getAllAvailableMiningLocations(context).then((_) {
-      if (_miningProvider.availableLocations != null){
-        List _markers = [];
-        for (LocationMiningModel miningLocation in _miningProvider.availableLocations) {
-          Marker _marker = Marker(
-            anchorPos: AnchorPos.align(AnchorAlign.center),
-            height: 40,
-            width: 40,
-            point: LatLng(
-                double.parse(miningLocation.latitude),
-                double.parse(miningLocation.longitude)
-            ),
-            key: new Key(miningLocation.orderId.toString()),
-            builder: (ctx) {
-              return Column(
-                children: [
-                  FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(
-                      miningLocation.miningAmount.toString(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+    if (provider.availableOrders != null){
+      List _markers = [];
+      for (LocationOrderModel order in provider.availableOrders) {
+        Marker _marker = Marker(
+          anchorPos: AnchorPos.align(AnchorAlign.center),
+          height: 40,
+          width: 40,
+          point: LatLng(
+              double.parse(order.latitude),
+              double.parse(order.longitude)
+          ),
+          key: new Key(order.orderId.toString()),
+          builder: (ctx) {
+            return Column(
+              children: [
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    order.orderAmount.toString(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Icon(Icons.restore_from_trash_outlined)
-                ],
-              );
-            },
-          );
-          _markers.add(_marker);
-        }
-        _markersClustered = List.from(_markers);
+                ),
+                Icon(Icons.monetization_on_outlined)
+              ],
+            );
+            // return Icon(Icons.pin_drop);
+          },
+        );
+        _markers.add(_marker);
       }
-    }).onError((error, stackTrace) {
-      debugPrint(error);
-    });
+      _markerOrder['orders'] = List.from(_markers);
+      // _markersClustered = List.from(_markers);
+    }
+  }
+
+  void _fetchMiningDataPoints(BuildContext context){
+    _miningProvider.getAllAvailableMiningLocations(context);
+  }
+  void _repaintMiningDataPoints() {
+    if (_miningProvider.availableLocations != null){
+      List _markers = [];
+      for (LocationMiningModel miningLocation in _miningProvider.availableLocations) {
+        Marker _marker = Marker(
+          anchorPos: AnchorPos.align(AnchorAlign.center),
+          height: 40,
+          width: 40,
+          point: LatLng(
+              double.parse(miningLocation.latitude),
+              double.parse(miningLocation.longitude)
+          ),
+          key: new Key(miningLocation.orderId.toString()),
+          builder: (ctx) {
+            return Column(
+              children: [
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    miningLocation.miningAmount.toString(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Icon(Icons.restore_from_trash_outlined)
+              ],
+            );
+          },
+        );
+        _markers.add(_marker);
+      }
+      _markerOrder['mining'] = List.from(_markers);
+      // _markersClustered = List.from(_markers);
+    }
   }
   void _filterDataPoints(){
+    List _markers = [];
+    if (_layerStates[0])
+      _markers.addAll(_markerOrder['orders']);
 
+    if (_layerStates[1])
+      _markers.addAll(_markerOrder['mining']);
+    _markersClustered = List.from(_markers);
   }
 
   OrderModel _fetchOrderModel(Key key){
