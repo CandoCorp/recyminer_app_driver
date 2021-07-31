@@ -22,8 +22,10 @@ class AppConstants {
 
   // LOCATION APIs
   static const String AVAILABLE_ORDERS_URI = '/api/v1/pending-orders/location';
+  static const String AVAILABLE_ORDERS_DETAILS_URI = '/api/v1/delivery-man/order-details-non-assigned?token=';
   // MINING LOCATION APIs
   static const String AVAILABLE_MINING_URI = '/api/v1/pending-orders/location';
+
   // Shared Key
   static const String THEME = 'theme';
   static const String TOKEN = 'token';

@@ -248,15 +248,17 @@ class _MapWidgetState extends State<MapWidget> {
     _miningProvider = Provider.of<LocationMiningProvider>(context, listen: false);
 
     provider.addListener(() {
-      setState(() {
-        _repaintOrderDataPoints();
-      });
+      if (this.mounted)
+        setState(() {
+          _repaintOrderDataPoints();
+        });
     });
 
     _miningProvider.addListener(() {
-      setState(() {
-        _repaintMiningDataPoints();
-      });
+      if (this.mounted)
+        setState(() {
+          _repaintMiningDataPoints();
+        });
     });
 
     _fetchOrderDataPoints(context);
@@ -274,9 +276,9 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   void dispose() {
-    super.dispose();
     _timer.cancel();
     _layerStatesNotifier.dispose();
+    super.dispose();
   }
 
   @override
@@ -285,7 +287,7 @@ class _MapWidgetState extends State<MapWidget> {
       _currentLocation = LatLng(position.latitude, position.longitude);
     });
 
-    return Scaffold(
+    return _currentLocation != null ? Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
@@ -302,6 +304,7 @@ class _MapWidgetState extends State<MapWidget> {
           zoom: _currentZoom,
           maxZoom: _maxZoom,
           plugins: [
+            MarkerClusterPlugin(),
             MarkerClusterPlugin(),
             ZoomButtonsPlugin(),
             LayerChooserPlugin()
@@ -323,7 +326,7 @@ class _MapWidgetState extends State<MapWidget> {
             fitBoundsOptions: FitBoundsOptions(
               padding: EdgeInsets.all(50),
             ),
-            markers: _markersClustered,
+            markers: _layerStates[0] ? List.castFrom(_markerOrder['orders']) : [],
             polygonOptions: PolygonOptions(
                 borderColor: Colors.blueAccent,
                 color: Colors.black12,
@@ -360,6 +363,50 @@ class _MapWidgetState extends State<MapWidget> {
               );
             },
           ),
+          MarkerClusterLayerOptions(
+            maxClusterRadius: 12,
+            size: Size(20, 20),
+            anchor: AnchorPos.align(AnchorAlign.center),
+            fitBoundsOptions: FitBoundsOptions(
+              padding: EdgeInsets.all(50),
+            ),
+            markers: _layerStates[1] ? List.castFrom(_markerOrder['mining']):[],
+            polygonOptions: PolygonOptions(
+                borderColor: Colors.blueAccent,
+                color: Colors.green,
+                borderStrokeWidth: 3),
+            popupOptions: PopupOptions(
+                popupSnap: PopupSnap.markerTop,
+                popupController: _popupController,
+                popupBuilder: (_, marker) => Container(
+                  width: 300,
+                  height: 180,
+                  decoration: BoxDecoration(
+                      boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(.5), spreadRadius: 1, blurRadius: 1, offset: Offset(0, 1))],
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_SMALL)
+                  ),
+                  child: GestureDetector(
+                      onTap: () => debugPrint('Popup tap!'),
+                      child: Consumer<OrderProvider>(
+                          builder: (context, orderProvider, child) {
+                            if (_orderProvider.pendingOrders != null && _orderProvider.pendingOrders.length != 0)
+                              return OrderPopupWidget(
+                                orderModel: _fetchOrderModel(marker.key),
+                              );
+                            return SizedBox.shrink();
+                          }
+                      )
+                  ),
+                )),
+            builder: (context, markers) {
+              return FloatingActionButton(
+                onPressed: null,
+                child: Text(markers.length.toString()),
+                backgroundColor: Colors.green,
+              );
+            },
+          ),
         ],
         nonRotatedLayers: [
           ZoomButtonsPluginOption(
@@ -377,6 +424,10 @@ class _MapWidgetState extends State<MapWidget> {
           )
         ],
       )
+    ):Center(
+        child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor)
+        )
     );
   }
 
@@ -420,7 +471,6 @@ class _MapWidgetState extends State<MapWidget> {
       // _markersClustered = List.from(_markers);
     }
   }
-
   void _fetchMiningDataPoints(BuildContext context){
     _miningProvider.getAllAvailableMiningLocations(context);
   }
@@ -469,7 +519,6 @@ class _MapWidgetState extends State<MapWidget> {
       _markers.addAll(_markerOrder['mining']);
     _markersClustered = List.from(_markers);
   }
-
   OrderModel _fetchOrderModel(Key key){
     OrderModel model;
 
@@ -486,7 +535,6 @@ class _MapWidgetState extends State<MapWidget> {
 
     return model;
   }
-
   Future<void> _getCurrentLocation() async{
 
     // verify permissions
@@ -503,7 +551,6 @@ class _MapWidgetState extends State<MapWidget> {
     // get address
     _currentAddress = await _getGeolocationAddress(_currentPosition);
   }
-
   // Method to get Address from position:
   Future<String> _getGeolocationAddress(Position position) async {
     // geocoding

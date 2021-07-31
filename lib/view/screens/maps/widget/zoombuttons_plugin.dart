@@ -71,7 +71,6 @@ class ZoomButtons extends StatelessWidget {
                 top: zoomButtonsOpts.padding,
                 right: zoomButtonsOpts.padding),
             child: FloatingActionButton(
-              heroTag: 'zoomInButton',
               mini: zoomButtonsOpts.mini,
               backgroundColor: zoomButtonsOpts.zoomInColor ?? Colors.black12,
               onPressed: () {
@@ -93,7 +92,6 @@ class ZoomButtons extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(zoomButtonsOpts.padding),
             child: FloatingActionButton(
-              heroTag: 'zoomOutButton',
               mini: zoomButtonsOpts.mini,
               backgroundColor: zoomButtonsOpts.zoomOutColor ?? Colors.black12,
               onPressed: () {

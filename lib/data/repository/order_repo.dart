@@ -65,7 +65,6 @@ class OrderRepo {
         AppConstants.UPDATE_PAYMENT_STATUS_URI,
         data: {"token": token, "order_id": orderId, "status": status, "_method": 'put'},
       );
-      return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }

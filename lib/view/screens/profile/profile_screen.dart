@@ -47,14 +47,18 @@ class ProfileScreen extends StatelessWidget {
                               height: 80,
                               fit: BoxFit.fill,
                               image:
-                                  '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}',
+                                  profileProvider.userInfoModel != null ?
+                                  '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}':
+                                  "",
                             )),
                       ),
                       SizedBox(height: 20),
                       Text(
-                        profileProvider.userInfoModel.fName != null
-                            ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
-                            : "",
+                        profileProvider.userInfoModel != null ?
+                          profileProvider.userInfoModel.fName != null
+                              ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
+                              : ""
+                          : "",
                         style: Theme.of(context)
                             .textTheme
                             .headline3
@@ -82,11 +86,11 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 20),
-                      _userInfoWidget(context: context, text: profileProvider.userInfoModel.fName),
+                      _userInfoWidget(context: context, text: profileProvider.userInfoModel?.fName),
                       SizedBox(height: 15),
-                      _userInfoWidget(context: context, text: profileProvider.userInfoModel.lName),
+                      _userInfoWidget(context: context, text: profileProvider.userInfoModel?.lName),
                       SizedBox(height: 15),
-                      _userInfoWidget(context: context, text: profileProvider.userInfoModel.phone),
+                      _userInfoWidget(context: context, text: profileProvider.userInfoModel?.phone),
                       SizedBox(height: 20),
                       InkWell(
                         onTap: () {

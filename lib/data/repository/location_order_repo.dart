@@ -23,7 +23,8 @@ class LocationOrderRepo {
 
   Future<ApiResponse> getLocationOrderDetails({String orderID}) async {
     try {
-      final response = await dioClient.get('${AppConstants.ORDER_DETAILS_URI}${sharedPreferences.get(AppConstants.TOKEN)}&order_id=$orderID');
+      final response = await dioClient
+          .get('${AppConstants.AVAILABLE_ORDERS_DETAILS_URI}${sharedPreferences.get(AppConstants.TOKEN)}&order_id=$orderID');
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -39,7 +40,7 @@ class LocationOrderRepo {
     }
   }
 
-  Future<ApiResponse> updateOrderStatus({String token, int orderId, String status}) async {
+  Future<ApiResponse> updateLocationOrderStatus({String token, int orderId, String status}) async {
     try {
       Response response = await dioClient.post(
         AppConstants.UPDATE_ORDER_STATUS_URI,

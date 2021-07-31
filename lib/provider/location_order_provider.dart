@@ -39,4 +39,65 @@ class LocationOrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // get order details
+  OrderDetailsModel _orderDetailsModel = OrderDetailsModel();
+
+  OrderDetailsModel get orderDetailsModel => _orderDetailsModel;
+  List<OrderDetailsModel> _orderDetails;
+
+  List<OrderDetailsModel> get orderDetails => _orderDetails;
+
+  Future<List<OrderDetailsModel>> getLocationOrderDetails(String orderID, BuildContext context) async {
+    _orderDetails = null;
+    ApiResponse apiResponse = await locationOrderRepo.getLocationOrderDetails(orderID: orderID);
+    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+      _orderDetails = [];
+      apiResponse.response.data.forEach((orderDetail) => _orderDetails.add(OrderDetailsModel.fromJson(orderDetail)));
+    } else {
+      ApiChecker.checkApi(context, apiResponse);
+    }
+    notifyListeners();
+    return _orderDetails;
+  }
+
+  // update Order Status
+  bool _isLoading = false;
+
+  bool get isLoading => _isLoading;
+  String _feedbackMessage;
+
+  String get feedbackMessage => _feedbackMessage;
+
+  Future<ResponseModel> updateOrderStatus({String token, int orderId, String status}) async {
+    _isLoading = true;
+    _feedbackMessage = '';
+    notifyListeners();
+    ApiResponse apiResponse = await locationOrderRepo.updateLocationOrderStatus(
+        token: token,
+        orderId: orderId,
+        status: status
+    );
+    _isLoading = false;
+    notifyListeners();
+    ResponseModel responseModel;
+    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+      // _currentLocationOrdersReverse.firstWhere((element) => element.orderId == orderId).orderStatus = status;
+      _feedbackMessage = apiResponse.response.data['message'];
+      responseModel = ResponseModel(apiResponse.response.data['message'], true);
+    } else {
+      String errorMessage;
+      if (apiResponse.error is String) {
+        print(apiResponse.error.toString());
+        errorMessage = apiResponse.error.toString();
+      } else {
+        ErrorResponse errorResponse = apiResponse.error;
+        print(errorResponse.errors[0].message);
+        errorMessage = errorResponse.errors[0].message;
+      }
+      _feedbackMessage = errorMessage;
+      responseModel = ResponseModel(errorMessage, false);
+    }
+    notifyListeners();
+    return responseModel;
+  }
 }

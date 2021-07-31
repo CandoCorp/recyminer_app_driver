@@ -126,7 +126,11 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
     ResponseModel responseModel;
     if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
-      _currentOrdersReverse[index].orderStatus = status;
+      if (index == null){
+        _currentOrdersReverse.firstWhere((element) => element.id == orderId).orderStatus = status;
+      }else{
+        _currentOrdersReverse[index].orderStatus = status;
+      }
       _feedbackMessage = apiResponse.response.data['message'];
       responseModel = ResponseModel(apiResponse.response.data['message'], true);
     } else {
