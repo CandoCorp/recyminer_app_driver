@@ -23,8 +23,12 @@ class OrderProvider with ChangeNotifier {
   List<OrderModel> _currentOrdersReverse = [];
   List<TimeSlotModel> _timeSlots;
 
+  List<OrderModel> _pendingOrders = [];
+  List<OrderModel> _pendingOrdersReverse = [];
+
   List<OrderModel> get currentOrders => _currentOrders;
   List<TimeSlotModel> get timeSlots => _timeSlots;
+  List<OrderModel> get pendingOrders => _pendingOrders;
 
   Future getAllOrders(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getAllOrders();
@@ -47,16 +51,16 @@ class OrderProvider with ChangeNotifier {
   Future getPendingOrders(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getPendingOrders();
     if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
-      _currentOrders = [];
-      _currentOrdersReverse = [];
+      _pendingOrders = [];
+      _pendingOrdersReverse = [];
       apiResponse.response.data.forEach((order) {
         OrderModel _orderModel = OrderModel.fromJson(order);
         if(_orderModel.orderStatus == 'pending') {
-          _currentOrdersReverse.add(_orderModel);
+          _pendingOrdersReverse.add(_orderModel);
         }
 
       });
-      _currentOrders = new List.from(_currentOrdersReverse.reversed);
+      _pendingOrders = new List.from(_pendingOrdersReverse.reversed);
     } else {
       ApiChecker.checkApi(context, apiResponse);
     }

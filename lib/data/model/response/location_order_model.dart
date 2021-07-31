@@ -1,4 +1,4 @@
-import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
+import 'order_model.dart';
 
 class LocationOrderModel {
   int _orderId;

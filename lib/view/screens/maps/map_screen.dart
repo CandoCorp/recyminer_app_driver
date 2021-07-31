@@ -7,9 +7,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:grocery_delivery_boy/data/model/response/location_mining_model.dart';
 import 'package:grocery_delivery_boy/data/model/response/location_order_model.dart';
 import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
 import 'package:grocery_delivery_boy/localization/language_constrants.dart';
+import 'package:grocery_delivery_boy/provider/location_mining_provider.dart';
 import 'package:grocery_delivery_boy/provider/location_order_provider.dart';
 import 'package:grocery_delivery_boy/provider/order_provider.dart';
 import 'package:grocery_delivery_boy/provider/profile_provider.dart';
@@ -20,6 +22,8 @@ import 'package:grocery_delivery_boy/utill/images.dart';
 import 'package:grocery_delivery_boy/view/screens/home/widget/order_widget.dart';
 import 'package:grocery_delivery_boy/view/screens/language/choose_language_screen.dart';
 import 'package:grocery_delivery_boy/view/screens/maps/widget/drawer.dart';
+import 'package:grocery_delivery_boy/view/screens/maps/widget/layer_chooser_plugin.dart';
+import 'package:grocery_delivery_boy/view/screens/maps/widget/order_popup_widget.dart';
 import 'package:grocery_delivery_boy/view/screens/maps/widget/zoombuttons_plugin.dart';
 import 'package:grocery_delivery_boy/view/screens/order/widget/permission_dialog.dart';
 import 'package:latlong2/latlong.dart';
@@ -187,6 +191,8 @@ class _MapWidgetState extends State<MapWidget> {
   final MapController _mapController = MapController();
 
   LocationOrderProvider provider;
+  OrderProvider _orderProvider;
+  LocationMiningProvider _miningProvider;
 
   Position _currentPosition;
   LatLng _currentLocation;
@@ -195,39 +201,50 @@ class _MapWidgetState extends State<MapWidget> {
   // final Geolocator geolocator = Geolocator();
 
   Timer _timer;
-  List<Marker> markers = [];
+  List<Marker> _markersClustered = [];
+  List<Marker> _markers = [];
 
-  double _currentZoom = 4.0;
-  double _maxZoom = 5.0;
+  Map _markerOrder;
+  double _currentZoom = 15.0;
+  double _maxZoom = 18.0;
 
-  int pointIndex;
-  List points = [
-    LatLng(51.5, -0.09),
-    LatLng(49.8566, 3.3522),
-  ];
+  Map _layerStates;
 
   @override
   void initState() {
     super.initState();
 
+    _layerStates = { 0: true, 1: true };
+    _markerOrder = {'mining':[], 'recollect':[]};
+
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
+      _markers.insert(0, Marker(
+          anchorPos: AnchorPos.align(AnchorAlign.center),
+          height: 40,
+          width: 40,
+          point: _currentLocation,
+          key: new Key("0"),
+          builder: (ctx) {
+            return Icon(Icons.pin_drop_outlined);
+          })
+      );
     });
 
     provider = Provider.of<LocationOrderProvider>(context, listen: false);
+    _orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    _miningProvider = Provider.of<LocationMiningProvider>(context, listen: false);
 
-    _timer = Timer.periodic(Duration(seconds: 10), (_) {
+    provider.addListener(() { setState(() {}); });
+
+    _miningProvider.addListener(() { setState(() {}); });
+
+    _timer = Timer.periodic(Duration(seconds: 60), (_) {
       setState(() {
         _fetchDataPoints();
+        _orderProvider.getPendingOrders(context);
       });
     });
-
-    _currentZoom = 5.0;
-    _maxZoom = 15.0;
-
-    pointIndex = 0;
-
-    // _getCurrentLocation();
   }
 
   @override
@@ -238,218 +255,207 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
+    _fetchDataPoints();
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+    });
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // pointIndex++;
-          // if (pointIndex >= points.length) {
-          //   pointIndex = 0;
-          // }
-          // setState(() {
-          //   markers[0] = Marker(
-          //     point: points[pointIndex],
-          //     anchorPos: AnchorPos.align(AnchorAlign.center),
-          //     height: 30,
-          //     width: 30,
-          //     builder: (ctx) => Icon(Icons.pin_drop),
-          //   );
-          //   markers = List.from(markers);
-
-          // });
-          Text(markers.length.toString());
+          setState(() {
+            if (_currentLocation != null)
+              _mapController.move(_currentLocation, _currentZoom);
+          });
         },
         child: Icon(Icons.refresh),
       ),
-      body: Consumer<LocationOrderProvider>(
-          builder: (context, locationOrder, child) {
-            if(locationOrder.availableOrders != null) {
-              for (LocationOrderModel order in locationOrder.availableOrders) {
-                LatLng _latlng = LatLng(
-                    double.parse(order.latitude),
-                    double.parse(order.longitude)
-                );
-                Marker _marker = Marker(
-                  anchorPos: AnchorPos.align(AnchorAlign.center),
-                  height: 30,
-                  width: 30,
-                  point: _latlng,
-                  builder: (ctx) => Icon(Icons.pin_drop),
-                );
-                markers.add(_marker);
-              }
-              return FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  center: markers != null ? markers.isNotEmpty ? markers[0].point : LatLng(51.5, -0.09) : LatLng(51.5, -0.09),
-                  zoom: _currentZoom,
-                  maxZoom: _maxZoom,
-                  plugins: [
-                    MarkerClusterPlugin(),
-                    ZoomButtonsPlugin()
-                  ],
-                  onTap: (_) => _popupController
-                      .hidePopup(), // Hide popup when the map is tapped.
-                ),
-                layers: [
-                  TileLayerOptions(
-                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
+      body: FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          center: _currentLocation != null ? _currentLocation : LatLng(-2.0, -79.00),
+          zoom: _currentZoom,
+          maxZoom: _maxZoom,
+          plugins: [
+            MarkerClusterPlugin(),
+            ZoomButtonsPlugin(),
+            LayerChooserPlugin()
+          ],
+          onTap: (_) => _popupController.hidePopup(), // Hide popup when the map is tapped.
+        ),
+        layers: [
+          TileLayerOptions(
+            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            subdomains: ['a', 'b', 'c'],
+          ),
+          MarkerLayerOptions(
+            markers: _markers
+          ),
+          MarkerClusterLayerOptions(
+            maxClusterRadius: 120,
+            size: Size(40, 40),
+            anchor: AnchorPos.align(AnchorAlign.center),
+            fitBoundsOptions: FitBoundsOptions(
+              padding: EdgeInsets.all(50),
+            ),
+            markers: _markersClustered,
+            polygonOptions: PolygonOptions(
+                borderColor: Colors.blueAccent,
+                color: Colors.black12,
+                borderStrokeWidth: 3),
+            popupOptions: PopupOptions(
+                popupSnap: PopupSnap.markerTop,
+                popupController: _popupController,
+                popupBuilder: (_, marker) => Container(
+                  width: 300,
+                  height: 180,
+                  decoration: BoxDecoration(
+                      boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(.5), spreadRadius: 1, blurRadius: 1, offset: Offset(0, 1))],
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_SMALL)
                   ),
-                  MarkerClusterLayerOptions(
-                    maxClusterRadius: 120,
-                    size: Size(40, 40),
-                    anchor: AnchorPos.align(AnchorAlign.center),
-                    fitBoundsOptions: FitBoundsOptions(
-                      padding: EdgeInsets.all(50),
-                    ),
-                    markers: markers,
-                    polygonOptions: PolygonOptions(
-                        borderColor: Colors.blueAccent,
-                        color: Colors.black12,
-                        borderStrokeWidth: 3),
-                    popupOptions: PopupOptions(
-                        popupSnap: PopupSnap.markerTop,
-                        popupController: _popupController,
-                        popupBuilder: (_, marker) => Container(
-                          width: 200,
-                          height: 100,
-                          color: Colors.white,
-                          child: GestureDetector(
-                              onTap: () => debugPrint('Popup tap!'),
-                              child: Text(markers.length.toString())
-                          ),
-                        )),
-                    builder: (context, markers) {
-                      return FloatingActionButton(
-                        onPressed: null,
-                        child: Text(markers.length.toString()),
-                      );
-                    },
+                  child: GestureDetector(
+                    onTap: () => debugPrint('Popup tap!'),
+                    child: Consumer<OrderProvider>(
+                      builder: (context, orderProvider, child) {
+                        if (_orderProvider.pendingOrders != null && _orderProvider.pendingOrders.length != 0)
+                          return OrderWidget(
+                            orderModel: _fetchOrderModel(marker.key),
+                            index: _markersClustered.indexWhere((_marker) => _marker.key == marker.key),
+                          );
+                        return SizedBox.shrink();
+                      }
+                    )
                   ),
-                ],
-                nonRotatedLayers: [
-                  ZoomButtonsPluginOption(
-                    minZoom: 5,
-                    maxZoom: 15,
-                    mini: false,
-                    padding: 10,
-                    alignment: Alignment.topRight,
-                  ),
-                ],
+                )),
+            builder: (context, markers) {
+              return FloatingActionButton(
+                onPressed: null,
+                child: Text(markers.length.toString()),
               );
-            }else {
-              return CircularProgressIndicator();
-            }
-      }),
+            },
+          ),
+        ],
+        nonRotatedLayers: [
+          ZoomButtonsPluginOption(
+            minZoom: 5,
+            maxZoom: 15,
+            mini: false,
+            padding: 10,
+            alignment: Alignment.topRight,
+          ),
+          LayerChooserPluginOptions(
+            mini: false,
+            padding: 10,
+            layerState: _layerStates,
+            mapState: this
+          )
+        ],
+      )
     );
-    // return Scaffold(
-    //   floatingActionButton: FloatingActionButton(
-    //     onPressed: () {
-    //       // pointIndex++;
-    //       // if (pointIndex >= points.length) {
-    //       //   pointIndex = 0;
-    //       // }
-    //       // setState(() {
-    //       //   markers[0] = Marker(
-    //       //     point: points[pointIndex],
-    //       //     anchorPos: AnchorPos.align(AnchorAlign.center),
-    //       //     height: 30,
-    //       //     width: 30,
-    //       //     builder: (ctx) => Icon(Icons.pin_drop),
-    //       //   );
-    //       //   markers = List.from(markers);
-    //
-    //       // });
-    //       Text(markers.length.toString());
-    //     },
-    //     child: Icon(Icons.refresh),
-    //   ),
-    //   body: FlutterMap(
-    //     mapController: _mapController,
-    //     options: MapOptions(
-    //       center: markers != null ? markers.isNotEmpty ? markers[0].point : LatLng(51.5, -0.09) : LatLng(51.5, -0.09),
-    //       zoom: _currentZoom,
-    //       maxZoom: _maxZoom,
-    //       plugins: [
-    //         MarkerClusterPlugin(),
-    //         ZoomButtonsPlugin()
-    //       ],
-    //       onTap: (_) => _popupController
-    //           .hidePopup(), // Hide popup when the map is tapped.
-    //     ),
-    //     layers: [
-    //       TileLayerOptions(
-    //         urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    //         subdomains: ['a', 'b', 'c'],
-    //       ),
-    //       MarkerClusterLayerOptions(
-    //         maxClusterRadius: 120,
-    //         size: Size(40, 40),
-    //         anchor: AnchorPos.align(AnchorAlign.center),
-    //         fitBoundsOptions: FitBoundsOptions(
-    //           padding: EdgeInsets.all(50),
-    //         ),
-    //         markers: markers,
-    //         polygonOptions: PolygonOptions(
-    //             borderColor: Colors.blueAccent,
-    //             color: Colors.black12,
-    //             borderStrokeWidth: 3),
-    //         popupOptions: PopupOptions(
-    //             popupSnap: PopupSnap.markerTop,
-    //             popupController: _popupController,
-    //             popupBuilder: (_, marker) => Container(
-    //               width: 200,
-    //               height: 100,
-    //               color: Colors.white,
-    //               child: GestureDetector(
-    //                   onTap: () => debugPrint('Popup tap!'),
-    //                   child: Text(markers.length.toString())
-    //               ),
-    //             )),
-    //         builder: (context, markers) {
-    //           return FloatingActionButton(
-    //             onPressed: null,
-    //             child: Text(markers.length.toString()),
-    //           );
-    //         },
-    //       ),
-    //     ],
-    //     nonRotatedLayers: [
-    //       ZoomButtonsPluginOption(
-    //         minZoom: 5,
-    //         maxZoom: 15,
-    //         mini: false,
-    //         padding: 10,
-    //         alignment: Alignment.topRight,
-    //       ),
-    //     ],
-    //   )
-    // );
   }
 
-  void _fetchDataPoints(){
-    provider.getAllAvailableOrders(context).then((x) {
+  void _fetchOrderDataPoints(BuildContext context){
+    provider.getAllAvailableOrders(context).then((_) {
       if (provider.availableOrders != null){
-        for (LocationOrderModel order in provider.availableOrders){
-          LatLng _latlng = LatLng(
-              double.parse(order.latitude),
-              double.parse(order.longitude)
-          );
+        List _markers = [];
+        for (LocationOrderModel order in provider.availableOrders) {
           Marker _marker = Marker(
             anchorPos: AnchorPos.align(AnchorAlign.center),
-            height: 30,
-            width: 30,
-            point: _latlng,
-            builder: (ctx) => Icon(Icons.pin_drop),
+            height: 40,
+            width: 40,
+            point: LatLng(
+                double.parse(order.latitude),
+                double.parse(order.longitude)
+            ),
+            key: new Key(order.orderId.toString()),
+            builder: (ctx) {
+              return Column(
+                children: [
+                  FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: Text(
+                      order.orderAmount.toString(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.monetization_on_outlined)
+                ],
+              );
+              // return Icon(Icons.pin_drop);
+            },
           );
-          markers = [];
-          markers.add(_marker);
-          _mapController.move(_currentLocation, _currentZoom);
+          _markers.add(_marker);
         }
+        _markersClustered = List.from(_markers);
       }
     }).onError((error, stackTrace) {
       debugPrint(error);
     });
+  }
+  void _repaintOrderDataPoints(){
+
+  }
+  void _fetchMiningDataPoints(BuildContext context){
+    _miningProvider.getAllAvailableMiningLocations(context).then((_) {
+      if (_miningProvider.availableLocations != null){
+        List _markers = [];
+        for (LocationMiningModel miningLocation in _miningProvider.availableLocations) {
+          Marker _marker = Marker(
+            anchorPos: AnchorPos.align(AnchorAlign.center),
+            height: 40,
+            width: 40,
+            point: LatLng(
+                double.parse(miningLocation.latitude),
+                double.parse(miningLocation.longitude)
+            ),
+            key: new Key(miningLocation.orderId.toString()),
+            builder: (ctx) {
+              return Column(
+                children: [
+                  FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: Text(
+                      miningLocation.miningAmount.toString(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.restore_from_trash_outlined)
+                ],
+              );
+            },
+          );
+          _markers.add(_marker);
+        }
+        _markersClustered = List.from(_markers);
+      }
+    }).onError((error, stackTrace) {
+      debugPrint(error);
+    });
+  }
+  void _filterDataPoints(){
+
+  }
+
+  OrderModel _fetchOrderModel(Key key){
+    OrderModel model;
+
+    final start = "[<'";
+    final end = "'>]";
+
+    final startIndex = key.toString().indexOf(start);
+    final endIndex = key.toString().indexOf(end);
+    final result = key.toString().substring(startIndex + start.length, endIndex).trim();
+
+    if (_orderProvider.pendingOrders != null){
+      model = _orderProvider.pendingOrders.firstWhere((element) => element.id.toString() == result);
+    }
+
+    return model;
   }
 
   Future<void> _getCurrentLocation() async{

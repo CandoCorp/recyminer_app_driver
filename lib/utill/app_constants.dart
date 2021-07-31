@@ -20,7 +20,10 @@ class AppConstants {
   static const String TOKEN_URI = '/api/v1/delivery-man/update-fcm-token';
   static const String TIMESLOT_URI = '/api/v1/timeSlot';
 
+  // LOCATION APIs
   static const String AVAILABLE_ORDERS_URI = '/api/v1/pending-orders/location';
+  // MINING LOCATION APIs
+  static const String AVAILABLE_MINING_URI = '/api/v1/pending-orders/location';
   // Shared Key
   static const String THEME = 'theme';
   static const String TOKEN = 'token';
