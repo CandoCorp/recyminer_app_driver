@@ -2,7 +2,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geocoding/geocoding.dart';
@@ -30,21 +29,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/model/response/location_order_model.dart';
-import '../../../data/model/response/location_order_model.dart';
-import '../../../data/model/response/location_order_model.dart';
 import '../../../data/model/response/order_model.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
-import '../../../provider/location_order_provider.dart';
 import '../../../provider/location_order_provider.dart';
 
 class MapScreen extends StatelessWidget {
   // This widget is the root of your application.
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   static const String route = '/moving_markers';
 
   @override
@@ -53,135 +44,148 @@ class MapScreen extends StatelessWidget {
     Provider.of<ProfileProvider>(context, listen: false).getUserInfo(context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).cardColor,
-        leadingWidth: 0,
-        actions: [
-          Consumer<OrderProvider>(
-            builder: (context, orderProvider, child) {
-              if (orderProvider.currentOrders != null) {
-                for (OrderModel order in orderProvider.currentOrders) {
-                  if (order.orderStatus == 'out_for_delivery') {
-                    _checkPermission(context, () {
-                      Provider.of<TrackerProvider>(context, listen: false)
-                          .setOrderID(order.id);
-                      Provider.of<TrackerProvider>(context, listen: false)
-                          .startLocationService();
-                    });
-                    break;
+        backgroundColor: Theme.of(context).backgroundColor,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).cardColor,
+          leadingWidth: 0,
+          actions: [
+            Consumer<OrderProvider>(
+              builder: (context, orderProvider, child) {
+                if (orderProvider.currentOrders != null) {
+                  for (OrderModel order in orderProvider.currentOrders) {
+                    if (order.orderStatus == 'out_for_delivery') {
+                      _checkPermission(context, () {
+                        Provider.of<TrackerProvider>(context, listen: false)
+                            .setOrderID(order.id);
+                        Provider.of<TrackerProvider>(context, listen: false)
+                            .startLocationService();
+                      });
+                      break;
+                    }
                   }
                 }
-              }
-              return orderProvider.currentOrders.length > 0
-                  ? SizedBox.shrink()
-                  : IconButton(icon: Icon(Icons.refresh, color: Theme
-                  .of(context)
-                  .textTheme
-                  .bodyText1
-                  .color),
-                  onPressed: () {
-                    orderProvider.refresh(context);
-                  });
-            },
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'language':
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChooseLanguageScreen(fromHomeScreen: true)));
-              }
-            },
-            icon: Icon(
-              Icons.more_vert_outlined,
-              color: Theme.of(context).textTheme.bodyText1.color,
+                return orderProvider.currentOrders.length > 0
+                    ? SizedBox.shrink()
+                    : IconButton(
+                        icon: Icon(Icons.refresh,
+                            color: Theme.of(context).textTheme.bodyText1.color),
+                        onPressed: () {
+                          orderProvider.refresh(context);
+                        });
+              },
             ),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'language',
-                child: Row(
-                  children: [
-                    Icon(Icons.language, color: Theme.of(context).textTheme.bodyText1.color),
-                    SizedBox(width: Dimensions.PADDING_SIZE_LARGE),
-                    Text(
-                      getTranslated('change_language', context),
-                      style: Theme.of(context).textTheme.headline2.copyWith(color: Theme.of(context).textTheme.bodyText1.color),
-                    ),
-                  ],
-                ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'language':
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) =>
+                            ChooseLanguageScreen(fromHomeScreen: true)));
+                }
+              },
+              icon: Icon(
+                Icons.more_vert_outlined,
+                color: Theme.of(context).textTheme.bodyText1.color,
               ),
-            ],
-          )
-        ],
-        leading: SizedBox.shrink(),
-        title: Consumer<ProfileProvider>(
-          builder: (context, profileProvider, child) => profileProvider.userInfoModel != null
-              ? Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(shape: BoxShape.circle),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: Images.placeholder_user,
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.fill,
-                    image: '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}',
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'language',
+                  child: Row(
+                    children: [
+                      Icon(Icons.language,
+                          color: Theme.of(context).textTheme.bodyText1.color),
+                      SizedBox(width: Dimensions.PADDING_SIZE_LARGE),
+                      Text(
+                        getTranslated('change_language', context),
+                        style: Theme.of(context).textTheme.headline2.copyWith(
+                            color: Theme.of(context).textTheme.bodyText1.color),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(
-                width: 8,
-              ),
-              Text(
-                profileProvider.userInfoModel.fName != null
-                    ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
-                    : "",
-                style:
-                Theme.of(context).textTheme.headline3.copyWith(fontSize: Dimensions.FONT_SIZE_LARGE, color: Theme.of(context).textTheme.bodyText1.color),
-              )
-            ],
-          )
-              : SizedBox.shrink(),
-        ),
-      ),
-      drawer: buildDrawer(context, route),
-      body: Padding(
-        padding: EdgeInsets.all(2.0),
-        child: Column(
-          children: [
-            Flexible(child: MapWidget())
+              ],
+            )
           ],
+          leading: SizedBox.shrink(),
+          title: Consumer<ProfileProvider>(
+            builder: (context, profileProvider, child) => profileProvider
+                        .userInfoModel !=
+                    null
+                ? Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(shape: BoxShape.circle),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: FadeInImage.assetNetwork(
+                            placeholder: Images.placeholder_user,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.fill,
+                            image:
+                                '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}',
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        profileProvider.userInfoModel.fName != null
+                            ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
+                            : "",
+                        style: Theme.of(context).textTheme.headline3.copyWith(
+                            fontSize: Dimensions.FONT_SIZE_LARGE,
+                            color: Theme.of(context).textTheme.bodyText1.color),
+                      )
+                    ],
+                  )
+                : SizedBox.shrink(),
+          ),
         ),
-      )
-    );
+        drawer: buildDrawer(context, route),
+        body: Padding(
+          padding: EdgeInsets.all(2.0),
+          child: Column(
+            children: [Flexible(child: MapWidget())],
+          ),
+        ));
   }
+
   void _checkPermission(BuildContext context, Function callback) async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied) {
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if(permission == LocationPermission.denied) {
-      showDialog(context: context, barrierDismissible: false, builder: (context) => PermissionDialog(isDenied: true, onPressed: () async {
-        Navigator.pop(context);
-        await Geolocator.requestPermission();
-        _checkPermission(context, callback);
-      }));
-    }else if(permission == LocationPermission.deniedForever) {
-      showDialog(context: context, barrierDismissible: false, builder: (context) => PermissionDialog(isDenied: false, onPressed: () async {
-        Navigator.pop(context);
-        await Geolocator.openAppSettings();
-        _checkPermission(context, callback);
-      }));
-    }else {
+    if (permission == LocationPermission.denied) {
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => PermissionDialog(
+              isDenied: true,
+              onPressed: () async {
+                Navigator.pop(context);
+                await Geolocator.requestPermission();
+                _checkPermission(context, callback);
+              }));
+    } else if (permission == LocationPermission.deniedForever) {
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => PermissionDialog(
+              isDenied: false,
+              onPressed: () async {
+                Navigator.pop(context);
+                await Geolocator.openAppSettings();
+                _checkPermission(context, callback);
+              }));
+    } else {
       callback();
     }
   }
 }
 
 class MapWidget extends StatefulWidget {
-
   @override
   _MapWidgetState createState() => _MapWidgetState();
 }
@@ -215,8 +219,8 @@ class _MapWidgetState extends State<MapWidget> {
   void initState() {
     super.initState();
 
-    _layerStates = { 0: true, 1: true };
-    _markerOrder = {'orders':[], 'mining':[]};
+    _layerStates = {0: true, 1: true};
+    _markerOrder = {'orders': [], 'mining': []};
 
     _layerStatesNotifier = new ValueNotifier(_layerStates);
     _layerStatesNotifier.addListener(() {
@@ -225,27 +229,33 @@ class _MapWidgetState extends State<MapWidget> {
       });
     });
 
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
-      _markers.insert(0, Marker(
-          anchorPos: AnchorPos.align(AnchorAlign.center),
-          height: 40,
-          width: 40,
-          point: _currentLocation,
-          key: new Key("0"),
-          builder: (ctx) {
-            return Container(
-              key: Key('purple'),
-              child: Icon(Icons.location_history, size: 48,),
-            );
-            return Icon(Icons.pin_drop_outlined);
-          })
-      );
+      _markers.insert(
+          0,
+          Marker(
+              anchorPos: AnchorPos.align(AnchorAlign.center),
+              height: 40,
+              width: 40,
+              point: _currentLocation,
+              key: new Key("0"),
+              builder: (ctx) {
+                return Container(
+                  key: Key('purple'),
+                  child: Icon(
+                    Icons.location_history,
+                    size: 48,
+                  ),
+                );
+                return Icon(Icons.pin_drop_outlined);
+              }));
     });
 
     provider = Provider.of<LocationOrderProvider>(context, listen: false);
     _orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    _miningProvider = Provider.of<LocationMiningProvider>(context, listen: false);
+    _miningProvider =
+        Provider.of<LocationMiningProvider>(context, listen: false);
 
     provider.addListener(() {
       if (this.mounted)
@@ -283,159 +293,183 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
     });
 
-    return _currentLocation != null ? Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            if (_currentLocation != null)
-              _mapController.move(_currentLocation, _currentZoom);
-          });
-        },
-        child: Icon(Icons.refresh),
-      ),
-      body: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          center: _currentLocation != null ? _currentLocation : LatLng(-2.0, -79.00),
-          zoom: _currentZoom,
-          maxZoom: _maxZoom,
-          plugins: [
-            MarkerClusterPlugin(),
-            MarkerClusterPlugin(),
-            ZoomButtonsPlugin(),
-            LayerChooserPlugin()
-          ],
-          onTap: (_) => _popupController.hidePopup(), // Hide popup when the map is tapped.
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            subdomains: ['a', 'b', 'c'],
-          ),
-          MarkerLayerOptions(
-            markers: _markers
-          ),
-          MarkerClusterLayerOptions(
-            maxClusterRadius: 120,
-            size: Size(40, 40),
-            anchor: AnchorPos.align(AnchorAlign.center),
-            fitBoundsOptions: FitBoundsOptions(
-              padding: EdgeInsets.all(50),
+    return _currentLocation != null
+        ? Scaffold(
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  if (_currentLocation != null)
+                    _mapController.move(_currentLocation, _currentZoom);
+                });
+              },
+              child: Icon(Icons.refresh),
             ),
-            markers: _layerStates[0] ? List.castFrom(_markerOrder['orders']) : [],
-            polygonOptions: PolygonOptions(
-                borderColor: Colors.blueAccent,
-                color: Colors.black12,
-                borderStrokeWidth: 3),
-            popupOptions: PopupOptions(
-                popupSnap: PopupSnap.markerTop,
-                popupController: _popupController,
-                popupBuilder: (_, marker) => Container(
-                  width: 300,
-                  height: 180,
-                  decoration: BoxDecoration(
-                      boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(.5), spreadRadius: 1, blurRadius: 1, offset: Offset(0, 1))],
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_SMALL)
+            body: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                center: _currentLocation != null
+                    ? _currentLocation
+                    : LatLng(-2.0, -79.00),
+                zoom: _currentZoom,
+                maxZoom: _maxZoom,
+                plugins: [
+                  MarkerClusterPlugin(),
+                  MarkerClusterPlugin(),
+                  ZoomButtonsPlugin(),
+                  LayerChooserPlugin()
+                ],
+                onTap: (_) => _popupController
+                    .hidePopup(), // Hide popup when the map is tapped.
+              ),
+              layers: [
+                TileLayerOptions(
+                  urlTemplate:
+                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: ['a', 'b', 'c'],
+                ),
+                MarkerLayerOptions(markers: _markers),
+                MarkerClusterLayerOptions(
+                  maxClusterRadius: 120,
+                  size: Size(40, 40),
+                  anchor: AnchorPos.align(AnchorAlign.center),
+                  fitBoundsOptions: FitBoundsOptions(
+                    padding: EdgeInsets.all(50),
                   ),
-                  child: GestureDetector(
-                    onTap: () => debugPrint('Popup tap!'),
-                    child: Consumer<OrderProvider>(
-                      builder: (context, orderProvider, child) {
-                        if (_orderProvider.pendingOrders != null && _orderProvider.pendingOrders.length != 0)
-                          return OrderWidget(
-                            orderModel: _fetchOrderModel(marker.key),
-                            index: _markersClustered.indexWhere((_marker) => _marker.key == marker.key),
-                          );
-                        return SizedBox.shrink();
-                      }
-                    )
+                  markers: _layerStates[0]
+                      ? List.castFrom(_markerOrder['orders'])
+                      : [],
+                  polygonOptions: PolygonOptions(
+                      borderColor: Colors.blueAccent,
+                      color: Colors.black12,
+                      borderStrokeWidth: 3),
+                  popupOptions: PopupOptions(
+                      popupSnap: PopupSnap.markerTop,
+                      popupController: _popupController,
+                      popupBuilder: (_, marker) => Container(
+                            width: 300,
+                            height: 180,
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Theme.of(context)
+                                          .shadowColor
+                                          .withOpacity(.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 1,
+                                      offset: Offset(0, 1))
+                                ],
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(
+                                    Dimensions.PADDING_SIZE_SMALL)),
+                            child: GestureDetector(
+                                onTap: () => debugPrint('Popup tap!'),
+                                child: Consumer<OrderProvider>(
+                                    builder: (context, orderProvider, child) {
+                                  if (_orderProvider.pendingOrders != null &&
+                                      _orderProvider.pendingOrders.length != 0)
+                                    return OrderWidget(
+                                      orderModel: _fetchOrderModel(marker.key),
+                                      index: _markersClustered.indexWhere(
+                                          (_marker) =>
+                                              _marker.key == marker.key),
+                                    );
+                                  return SizedBox.shrink();
+                                })),
+                          )),
+                  builder: (context, markers) {
+                    return FloatingActionButton(
+                      onPressed: null,
+                      child: Text(markers.length.toString()),
+                    );
+                  },
+                ),
+                MarkerClusterLayerOptions(
+                  maxClusterRadius: 12,
+                  size: Size(20, 20),
+                  anchor: AnchorPos.align(AnchorAlign.center),
+                  fitBoundsOptions: FitBoundsOptions(
+                    padding: EdgeInsets.all(50),
                   ),
-                )),
-            builder: (context, markers) {
-              return FloatingActionButton(
-                onPressed: null,
-                child: Text(markers.length.toString()),
-              );
-            },
-          ),
-          MarkerClusterLayerOptions(
-            maxClusterRadius: 12,
-            size: Size(20, 20),
-            anchor: AnchorPos.align(AnchorAlign.center),
-            fitBoundsOptions: FitBoundsOptions(
-              padding: EdgeInsets.all(50),
-            ),
-            markers: _layerStates[1] ? List.castFrom(_markerOrder['mining']):[],
-            polygonOptions: PolygonOptions(
-                borderColor: Colors.blueAccent,
-                color: Colors.green,
-                borderStrokeWidth: 3),
-            popupOptions: PopupOptions(
-                popupSnap: PopupSnap.markerTop,
-                popupController: _popupController,
-                popupBuilder: (_, marker) => Container(
-                  width: 300,
-                  height: 180,
-                  decoration: BoxDecoration(
-                      boxShadow: [BoxShadow(color: Theme.of(context).shadowColor.withOpacity(.5), spreadRadius: 1, blurRadius: 1, offset: Offset(0, 1))],
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_SMALL)
-                  ),
-                  child: GestureDetector(
-                      onTap: () => debugPrint('Popup tap!'),
-                      child: Consumer<OrderProvider>(
-                          builder: (context, orderProvider, child) {
-                            if (_orderProvider.pendingOrders != null && _orderProvider.pendingOrders.length != 0)
-                              return OrderPopupWidget(
-                                orderModel: _fetchOrderModel(marker.key),
-                              );
-                            return SizedBox.shrink();
-                          }
-                      )
-                  ),
-                )),
-            builder: (context, markers) {
-              return FloatingActionButton(
-                onPressed: null,
-                child: Text(markers.length.toString()),
-                backgroundColor: Colors.green,
-              );
-            },
-          ),
-        ],
-        nonRotatedLayers: [
-          ZoomButtonsPluginOption(
-            minZoom: 5,
-            maxZoom: 15,
-            mini: false,
-            padding: 10,
-            alignment: Alignment.topRight,
-          ),
-          LayerChooserPluginOptions(
-            mini: false,
-            padding: 10,
-            layerState: _layerStates,
-            mapState: _layerStatesNotifier
-          )
-        ],
-      )
-    ):Center(
-        child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor)
-        )
-    );
+                  markers: _layerStates[1]
+                      ? List.castFrom(_markerOrder['mining'])
+                      : [],
+                  polygonOptions: PolygonOptions(
+                      borderColor: Colors.blueAccent,
+                      color: Colors.green,
+                      borderStrokeWidth: 3),
+                  popupOptions: PopupOptions(
+                      popupSnap: PopupSnap.markerTop,
+                      popupController: _popupController,
+                      popupBuilder: (_, marker) => Container(
+                            width: 300,
+                            height: 180,
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Theme.of(context)
+                                          .shadowColor
+                                          .withOpacity(.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 1,
+                                      offset: Offset(0, 1))
+                                ],
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(
+                                    Dimensions.PADDING_SIZE_SMALL)),
+                            child: GestureDetector(
+                                onTap: () => debugPrint('Popup tap!'),
+                                child: Consumer<OrderProvider>(
+                                    builder: (context, orderProvider, child) {
+                                  if (_orderProvider.pendingOrders != null &&
+                                      _orderProvider.pendingOrders.length != 0)
+                                    return OrderPopupWidget(
+                                      orderModel: _fetchOrderModel(marker.key),
+                                      isPending: true,
+                                    );
+                                  return SizedBox.shrink();
+                                })),
+                          )),
+                  builder: (context, markers) {
+                    return FloatingActionButton(
+                      onPressed: null,
+                      child: Text(markers.length.toString()),
+                      backgroundColor: Colors.green,
+                    );
+                  },
+                ),
+              ],
+              nonRotatedLayers: [
+                ZoomButtonsPluginOption(
+                  minZoom: 5,
+                  maxZoom: 15,
+                  mini: false,
+                  padding: 10,
+                  alignment: Alignment.topRight,
+                ),
+                LayerChooserPluginOptions(
+                    mini: false,
+                    padding: 10,
+                    layerState: _layerStates,
+                    mapState: _layerStatesNotifier)
+              ],
+            ))
+        : Center(
+            child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor)));
   }
 
-  void _fetchOrderDataPoints(BuildContext context){
+  void _fetchOrderDataPoints(BuildContext context) {
     provider.getAllAvailableOrders(context);
   }
-  void _repaintOrderDataPoints(){
-    if (provider.availableOrders != null){
+
+  void _repaintOrderDataPoints() {
+    if (provider.availableOrders != null) {
       List _markers = [];
       for (LocationOrderModel order in provider.availableOrders) {
         Marker _marker = Marker(
@@ -443,9 +477,7 @@ class _MapWidgetState extends State<MapWidget> {
           height: 40,
           width: 40,
           point: LatLng(
-              double.parse(order.latitude),
-              double.parse(order.longitude)
-          ),
+              double.parse(order.latitude), double.parse(order.longitude)),
           key: new Key(order.orderId.toString()),
           builder: (ctx) {
             return Column(
@@ -471,21 +503,22 @@ class _MapWidgetState extends State<MapWidget> {
       // _markersClustered = List.from(_markers);
     }
   }
-  void _fetchMiningDataPoints(BuildContext context){
+
+  void _fetchMiningDataPoints(BuildContext context) {
     _miningProvider.getAllAvailableMiningLocations(context);
   }
+
   void _repaintMiningDataPoints() {
-    if (_miningProvider.availableLocations != null){
+    if (_miningProvider.availableLocations != null) {
       List _markers = [];
-      for (LocationMiningModel miningLocation in _miningProvider.availableLocations) {
+      for (LocationMiningModel miningLocation
+          in _miningProvider.availableLocations) {
         Marker _marker = Marker(
           anchorPos: AnchorPos.align(AnchorAlign.center),
           height: 40,
           width: 40,
-          point: LatLng(
-              double.parse(miningLocation.latitude),
-              double.parse(miningLocation.longitude)
-          ),
+          point: LatLng(double.parse(miningLocation.latitude),
+              double.parse(miningLocation.longitude)),
           key: new Key(miningLocation.orderId.toString()),
           builder: (ctx) {
             return Column(
@@ -510,16 +543,16 @@ class _MapWidgetState extends State<MapWidget> {
       // _markersClustered = List.from(_markers);
     }
   }
-  void _filterDataPoints(){
-    List _markers = [];
-    if (_layerStates[0])
-      _markers.addAll(_markerOrder['orders']);
 
-    if (_layerStates[1])
-      _markers.addAll(_markerOrder['mining']);
+  void _filterDataPoints() {
+    List _markers = [];
+    if (_layerStates[0]) _markers.addAll(_markerOrder['orders']);
+
+    if (_layerStates[1]) _markers.addAll(_markerOrder['mining']);
     _markersClustered = List.from(_markers);
   }
-  OrderModel _fetchOrderModel(Key key){
+
+  OrderModel _fetchOrderModel(Key key) {
     OrderModel model;
 
     final start = "[<'";
@@ -527,16 +560,18 @@ class _MapWidgetState extends State<MapWidget> {
 
     final startIndex = key.toString().indexOf(start);
     final endIndex = key.toString().indexOf(end);
-    final result = key.toString().substring(startIndex + start.length, endIndex).trim();
+    final result =
+        key.toString().substring(startIndex + start.length, endIndex).trim();
 
-    if (_orderProvider.pendingOrders != null){
-      model = _orderProvider.pendingOrders.firstWhere((element) => element.id.toString() == result);
+    if (_orderProvider.pendingOrders != null) {
+      model = _orderProvider.pendingOrders
+          .firstWhere((element) => element.id.toString() == result);
     }
 
     return model;
   }
-  Future<void> _getCurrentLocation() async{
 
+  Future<void> _getCurrentLocation() async {
     // verify permissions
     LocationPermission permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied ||
@@ -551,6 +586,7 @@ class _MapWidgetState extends State<MapWidget> {
     // get address
     _currentAddress = await _getGeolocationAddress(_currentPosition);
   }
+
   // Method to get Address from position:
   Future<String> _getGeolocationAddress(Position position) async {
     // geocoding

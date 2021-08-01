@@ -32,12 +32,14 @@ class OrderProvider with ChangeNotifier {
 
   Future getAllOrders(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getAllOrders();
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _currentOrders = [];
       _currentOrdersReverse = [];
       apiResponse.response.data.forEach((order) {
         OrderModel _orderModel = OrderModel.fromJson(order);
-        if(_orderModel.orderStatus == 'processing' || _orderModel.orderStatus == 'out_for_delivery') {
+        if (_orderModel.orderStatus == 'processing' ||
+            _orderModel.orderStatus == 'out_for_delivery') {
           _currentOrdersReverse.add(_orderModel);
         }
       });
@@ -50,15 +52,15 @@ class OrderProvider with ChangeNotifier {
 
   Future getPendingOrders(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getPendingOrders();
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _pendingOrders = [];
       _pendingOrdersReverse = [];
       apiResponse.response.data.forEach((order) {
         OrderModel _orderModel = OrderModel.fromJson(order);
-        if(_orderModel.orderStatus == 'pending') {
+        if (_orderModel.orderStatus == 'pending') {
           _pendingOrdersReverse.add(_orderModel);
         }
-
       });
       _pendingOrders = new List.from(_pendingOrdersReverse.reversed);
     } else {
@@ -75,12 +77,15 @@ class OrderProvider with ChangeNotifier {
 
   List<OrderDetailsModel> get orderDetails => _orderDetails;
 
-  Future<List<OrderDetailsModel>> getOrderDetails(String orderID, BuildContext context) async {
+  Future<List<OrderDetailsModel>> getOrderDetails(
+      String orderID, BuildContext context) async {
     _orderDetails = null;
     ApiResponse apiResponse = await orderRepo.getOrderDetails(orderID: orderID);
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _orderDetails = [];
-      apiResponse.response.data.forEach((orderDetail) => _orderDetails.add(OrderDetailsModel.fromJson(orderDetail)));
+      apiResponse.response.data.forEach((orderDetail) =>
+          _orderDetails.add(OrderDetailsModel.fromJson(orderDetail)));
     } else {
       ApiChecker.checkApi(context, apiResponse);
     }
@@ -96,12 +101,15 @@ class OrderProvider with ChangeNotifier {
 
   Future<List<OrderModel>> getOrderHistory(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getAllOrderHistory();
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _allOrderHistory = [];
       _allOrderReverse = [];
-      apiResponse.response.data.forEach((orderDetail) => _allOrderReverse.add(OrderModel.fromJson(orderDetail)));
+      apiResponse.response.data.forEach((orderDetail) =>
+          _allOrderReverse.add(OrderModel.fromJson(orderDetail)));
       _allOrderHistory = new List.from(_allOrderReverse.reversed);
-      _allOrderHistory.removeWhere((order) => (order.orderStatus) != 'delivered');
+      _allOrderHistory
+          .removeWhere((order) => (order.orderStatus) != 'delivered');
     } else {
       ApiChecker.checkApi(context, apiResponse);
     }
@@ -117,18 +125,23 @@ class OrderProvider with ChangeNotifier {
 
   String get feedbackMessage => _feedbackMessage;
 
-  Future<ResponseModel> updateOrderStatus({String token, int orderId, String status, int index}) async {
+  Future<ResponseModel> updateOrderStatus(
+      {String token, int orderId, String status, int index}) async {
     _isLoading = true;
     _feedbackMessage = '';
     notifyListeners();
-    ApiResponse apiResponse = await orderRepo.updateOrderStatus(token: token, orderId: orderId, status: status);
+    ApiResponse apiResponse = await orderRepo.updateOrderStatus(
+        token: token, orderId: orderId, status: status);
     _isLoading = false;
     notifyListeners();
     ResponseModel responseModel;
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
-      if (index == null){
-        _currentOrdersReverse.firstWhere((element) => element.id == orderId).orderStatus = status;
-      }else{
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
+      if (index == null) {
+        _currentOrdersReverse
+            .firstWhere((element) => element.id == orderId)
+            .orderStatus = status;
+      } else {
         _currentOrdersReverse[index].orderStatus = status;
       }
       _feedbackMessage = apiResponse.response.data['message'];
@@ -150,10 +163,45 @@ class OrderProvider with ChangeNotifier {
     return responseModel;
   }
 
-  Future updatePaymentStatus({String token, int orderId, String status}) async {
-    ApiResponse apiResponse = await orderRepo.updatePaymentStatus(token: token, orderId: orderId, status: status);
+  //updateOrderToMe
 
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+  Future<ResponseModel> updateOrderToMe(
+      {String token, int orderId, String status}) async {
+    _isLoading = true;
+    _feedbackMessage = '';
+    notifyListeners();
+    ApiResponse apiResponse = await orderRepo.updateOrderToMe(
+        token: token, orderId: orderId, status: status);
+    _isLoading = false;
+    notifyListeners();
+    ResponseModel responseModel;
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
+      _feedbackMessage = apiResponse.response.data['message'];
+      responseModel = ResponseModel(apiResponse.response.data['message'], true);
+    } else {
+      String errorMessage;
+      if (apiResponse.error is String) {
+        print(apiResponse.error.toString());
+        errorMessage = apiResponse.error.toString();
+      } else {
+        ErrorResponse errorResponse = apiResponse.error;
+        print(errorResponse.errors[0].message);
+        errorMessage = errorResponse.errors[0].message;
+      }
+      _feedbackMessage = errorMessage;
+      responseModel = ResponseModel(errorMessage, false);
+    }
+    notifyListeners();
+    return responseModel;
+  }
+
+  Future updatePaymentStatus({String token, int orderId, String status}) async {
+    ApiResponse apiResponse = await orderRepo.updatePaymentStatus(
+        token: token, orderId: orderId, status: status);
+
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
     } else {
       if (apiResponse.error is String) {
         print(apiResponse.error.toString());
@@ -165,7 +213,7 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<OrderModel>> refresh(BuildContext context) async{
+  Future<List<OrderModel>> refresh(BuildContext context) async {
     getAllOrders(context);
     Timer(Duration(seconds: 5), () {});
     return getOrderHistory(context);
@@ -173,13 +221,14 @@ class OrderProvider with ChangeNotifier {
 
   Future<void> initializeTimeSlot(BuildContext context) async {
     ApiResponse apiResponse = await orderRepo.getTimeSlot();
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _timeSlots = [];
-      apiResponse.response.data.forEach((timeSlot) => _timeSlots.add(TimeSlotModel.fromJson(timeSlot)));
+      apiResponse.response.data.forEach(
+          (timeSlot) => _timeSlots.add(TimeSlotModel.fromJson(timeSlot)));
     } else {
       ApiChecker.checkApi(context, apiResponse);
     }
     notifyListeners();
   }
-
 }

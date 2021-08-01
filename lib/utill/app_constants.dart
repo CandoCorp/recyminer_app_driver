@@ -10,19 +10,28 @@ class AppConstants {
   static const String LOGIN_URI = '/api/v1/auth/delivery-man/login';
   static const String NOTIFICATION_URI = '/api/v1/notifications';
   static const String UPDATE_PROFILE_URI = '/api/v1/customer/update-profile';
-  static const String CURRENT_ORDERS_URI = '/api/v1/delivery-man/current-orders?token=';
-  static const String PENDING_ORDERS_URI = '/api/v1/delivery-man/pending-orders?token=';
-  static const String ORDER_DETAILS_URI = '/api/v1/delivery-man/order-details?token=';
-  static const String ORDER_HISTORY_URI = '/api/v1/delivery-man/all-orders?token=';
-  static const String RECORD_LOCATION_URI = '/api/v1/delivery-man/record-location-data';
-  static const String UPDATE_ORDER_STATUS_URI = '/api/v1/delivery-man/update-order-status';
-  static const String UPDATE_PAYMENT_STATUS_URI = '/api/v1/delivery-man/update-payment-status';
+  static const String CURRENT_ORDERS_URI =
+      '/api/v1/delivery-man/current-orders?token=';
+  static const String PENDING_ORDERS_URI =
+      '/api/v1/delivery-man/pending-orders?token=';
+  static const String ORDER_DETAILS_URI =
+      '/api/v1/delivery-man/order-details?token=';
+  static const String ORDER_HISTORY_URI =
+      '/api/v1/delivery-man/all-orders?token=';
+  static const String RECORD_LOCATION_URI =
+      '/api/v1/delivery-man/record-location-data';
+  static const String UPDATE_ORDER_STATUS_URI =
+      '/api/v1/delivery-man/update-order-status';
+  static const String SET_ORDER_STATUS_URI = '/api/v1/delivery-man/set-order';
+  static const String UPDATE_PAYMENT_STATUS_URI =
+      '/api/v1/delivery-man/update-payment-status';
   static const String TOKEN_URI = '/api/v1/delivery-man/update-fcm-token';
   static const String TIMESLOT_URI = '/api/v1/timeSlot';
 
   // LOCATION APIs
   static const String AVAILABLE_ORDERS_URI = '/api/v1/pending-orders/location';
-  static const String AVAILABLE_ORDERS_DETAILS_URI = '/api/v1/delivery-man/order-details-non-assigned?token=';
+  static const String AVAILABLE_ORDERS_DETAILS_URI =
+      '/api/v1/delivery-man/order-details-non-assigned?token=';
   // MINING LOCATION APIs
   static const String AVAILABLE_MINING_URI = '/api/v1/pending-orders/location';
 
@@ -37,7 +46,15 @@ class AppConstants {
   static const String ORDER_ID = 'order_id';
 
   static List<LanguageModel> languages = [
-    LanguageModel(imageUrl: Images.united_kindom, languageName: 'English', countryCode: 'US', languageCode: 'en'),
-    LanguageModel(imageUrl: Images.arabic, languageName: 'Arabic', countryCode: 'SA', languageCode: 'ar'),
+    LanguageModel(
+        imageUrl: Images.united_kindom,
+        languageName: 'English',
+        countryCode: 'US',
+        languageCode: 'en'),
+    LanguageModel(
+        imageUrl: Images.arabic,
+        languageName: 'Arabic',
+        countryCode: 'SA',
+        languageCode: 'ar'),
   ];
 }
