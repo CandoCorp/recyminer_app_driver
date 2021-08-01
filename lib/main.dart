@@ -3,26 +3,28 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:grocery_delivery_boy/provider/location_mining_provider.dart';
-import 'package:grocery_delivery_boy/provider/location_order_provider.dart';
-import 'package:grocery_delivery_boy/utill/app_constants.dart';
-import 'package:grocery_delivery_boy/localization/app_localization.dart';
-import 'package:grocery_delivery_boy/notification/my_notification.dart';
-import 'package:grocery_delivery_boy/provider/auth_provider.dart';
-import 'package:grocery_delivery_boy/provider/localization_provider.dart';
-import 'package:grocery_delivery_boy/provider/language_provider.dart';
-import 'package:grocery_delivery_boy/provider/order_provider.dart';
-import 'package:grocery_delivery_boy/provider/profile_provider.dart';
-import 'package:grocery_delivery_boy/provider/splash_provider.dart';
-import 'package:grocery_delivery_boy/provider/theme_provider.dart';
-import 'package:grocery_delivery_boy/provider/tracker_provider.dart';
-import 'package:grocery_delivery_boy/theme/dark_theme.dart';
-import 'package:grocery_delivery_boy/theme/light_theme.dart';
-import 'package:grocery_delivery_boy/view/screens/splash/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:recyminer_miner/localization/app_localization.dart';
+import 'package:recyminer_miner/notification/my_notification.dart';
+import 'package:recyminer_miner/provider/auth_provider.dart';
+import 'package:recyminer_miner/provider/language_provider.dart';
+import 'package:recyminer_miner/provider/localization_provider.dart';
+import 'package:recyminer_miner/provider/location_mining_provider.dart';
+import 'package:recyminer_miner/provider/location_order_provider.dart';
+import 'package:recyminer_miner/provider/order_provider.dart';
+import 'package:recyminer_miner/provider/profile_provider.dart';
+import 'package:recyminer_miner/provider/splash_provider.dart';
+import 'package:recyminer_miner/provider/theme_provider.dart';
+import 'package:recyminer_miner/provider/tracker_provider.dart';
+import 'package:recyminer_miner/theme/dark_theme.dart';
+import 'package:recyminer_miner/theme/light_theme.dart';
+import 'package:recyminer_miner/utill/app_constants.dart';
+import 'package:recyminer_miner/view/screens/splash/splash_screen.dart';
+
 import 'di_container.dart' as di;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,14 +38,18 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (context) => di.sl<ThemeProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<SplashProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<LanguageProvider>()),
-      ChangeNotifierProvider(create: (context) => di.sl<LocalizationProvider>()),
+      ChangeNotifierProvider(
+          create: (context) => di.sl<LocalizationProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<AuthProvider>()),
-      ChangeNotifierProvider(create: (context) => di.sl<LocalizationProvider>()),
+      ChangeNotifierProvider(
+          create: (context) => di.sl<LocalizationProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<ProfileProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<OrderProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<TrackerProvider>()),
-      ChangeNotifierProvider(create: (context) => di.sl<LocationOrderProvider>()),
-      ChangeNotifierProvider(create: (context) => di.sl<LocationMiningProvider>())
+      ChangeNotifierProvider(
+          create: (context) => di.sl<LocationOrderProvider>()),
+      ChangeNotifierProvider(
+          create: (context) => di.sl<LocationMiningProvider>())
     ],
     child: MyApp(),
   ));

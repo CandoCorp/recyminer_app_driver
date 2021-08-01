@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/data/model/response/config_model.dart';
-import 'package:grocery_delivery_boy/data/repository/splash_repo.dart';
-import 'package:grocery_delivery_boy/helper/api_checker.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/data/model/response/config_model.dart';
+import 'package:recyminer_miner/data/repository/splash_repo.dart';
+import 'package:recyminer_miner/helper/api_checker.dart';
 
 class SplashProvider extends ChangeNotifier {
   final SplashRepo splashRepo;
@@ -17,7 +17,8 @@ class SplashProvider extends ChangeNotifier {
   Future<bool> initConfig(BuildContext context) async {
     ApiResponse apiResponse = await splashRepo.getConfig();
     bool isSuccess;
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       _configModel = ConfigModel.fromJson(apiResponse.response.data);
       _baseUrls = ConfigModel.fromJson(apiResponse.response.data).baseUrls;
       isSuccess = true;
@@ -36,6 +37,4 @@ class SplashProvider extends ChangeNotifier {
   Future<bool> removeSharedData() {
     return splashRepo.removeSharedData();
   }
-
-
 }

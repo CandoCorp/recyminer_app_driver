@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:grocery_delivery_boy/data/model/response/response_model.dart';
-import 'package:grocery_delivery_boy/data/model/body/TrackBody.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/error_response.dart';
-import 'package:grocery_delivery_boy/data/repository/tracker_repo.dart';
+import 'package:recyminer_miner/data/model/body/TrackBody.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/data/model/response/base/error_response.dart';
+import 'package:recyminer_miner/data/model/response/response_model.dart';
+import 'package:recyminer_miner/data/repository/tracker_repo.dart';
 
 class TrackerProvider extends ChangeNotifier {
   final TrackerRepo trackerRepo;
@@ -29,7 +29,7 @@ class TrackerProvider extends ChangeNotifier {
   void startLocationService() async {
     _startTrack = true;
     addTrack();
-    if(_timer != null) {
+    if (_timer != null) {
       _timer.cancel();
       _timer = null;
     }
@@ -40,7 +40,7 @@ class TrackerProvider extends ChangeNotifier {
 
   void stopLocationService() {
     _startTrack = false;
-    if(_timer != null) {
+    if (_timer != null) {
       _timer.cancel();
       _timer = null;
     }
@@ -53,12 +53,17 @@ class TrackerProvider extends ChangeNotifier {
       Geolocator.getCurrentPosition().then((location) async {
         String _location = 'demo';
         try {
-          List<Placemark> _placeMark = await placemarkFromCoordinates(location.latitude, location.longitude);
+          List<Placemark> _placeMark = await placemarkFromCoordinates(
+              location.latitude, location.longitude);
           Placemark _address = _placeMark.first;
-          _location = '${_address.name ?? ''}, ${_address.subAdministrativeArea ?? ''}, ${_address.isoCountryCode ?? ''}' ?? 'demo';
-        }catch(e) {}
-        ApiResponse apiResponse = await trackerRepo.addTrack(location.latitude, location.longitude, _location);
-        if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+          _location =
+              '${_address.name ?? ''}, ${_address.subAdministrativeArea ?? ''}, ${_address.isoCountryCode ?? ''}' ??
+                  'demo';
+        } catch (e) {}
+        ApiResponse apiResponse = await trackerRepo.addTrack(
+            location.latitude, location.longitude, _location);
+        if (apiResponse.response != null &&
+            apiResponse.response.statusCode == 200) {
           _responseModel = ResponseModel(true, 'Successfully start track');
         } else {
           String errorMessage;

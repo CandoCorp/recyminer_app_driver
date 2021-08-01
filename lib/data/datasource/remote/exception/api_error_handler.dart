@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/error_response.dart';
+import 'package:recyminer_miner/data/model/response/base/error_response.dart';
 
 class ApiErrorHandler {
   static dynamic getMessage(error) {
@@ -16,11 +16,11 @@ class ApiErrorHandler {
               break;
             case DioErrorType.other:
               errorDescription =
-              "Connection to API server failed due to internet connection";
+                  "Connection to API server failed due to internet connection";
               break;
             case DioErrorType.receiveTimeout:
               errorDescription =
-              "Receive timeout in connection with API server";
+                  "Receive timeout in connection with API server";
               break;
             case DioErrorType.response:
               switch (error.response.statusCode) {
@@ -31,13 +31,13 @@ class ApiErrorHandler {
                   break;
                 default:
                   ErrorResponse errorResponse =
-                  ErrorResponse.fromJson(error.response.data);
+                      ErrorResponse.fromJson(error.response.data);
                   if (errorResponse.errors != null &&
                       errorResponse.errors.length > 0)
                     errorDescription = errorResponse;
                   else
                     errorDescription =
-                    "Failed to load data - status code: ${error.response.statusCode}";
+                        "Failed to load data - status code: ${error.response.statusCode}";
               }
               break;
             case DioErrorType.sendTimeout:

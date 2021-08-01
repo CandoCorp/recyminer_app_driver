@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/provider/language_provider.dart';
-import 'package:grocery_delivery_boy/utill/color_resources.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
+import 'package:recyminer_miner/provider/language_provider.dart';
+import 'package:recyminer_miner/utill/color_resources.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
@@ -56,14 +56,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_EXTRA_SMALL),
+          borderRadius:
+              BorderRadius.circular(Dimensions.PADDING_SIZE_EXTRA_SMALL),
           color: Theme.of(context).cardColor,
-          border: Border.all(color: widget.isShowBorder ? ColorResources.colorMap[200] : Colors.transparent)),
+          border: Border.all(
+              color: widget.isShowBorder
+                  ? ColorResources.colorMap[200]
+                  : Colors.transparent)),
       child: TextField(
         maxLines: widget.maxLines,
         controller: widget.controller,
         focusNode: widget.focusNode,
-        style: Theme.of(context).textTheme.headline2.copyWith(color: Theme.of(context).accentColor, fontSize: Dimensions.FONT_SIZE_LARGE),
+        style: Theme.of(context).textTheme.headline2.copyWith(
+            color: Theme.of(context).accentColor,
+            fontSize: Dimensions.FONT_SIZE_LARGE),
         textInputAction: widget.inputAction,
         keyboardType: widget.inputType,
         cursorColor: ColorResources.COLOR_PRIMARY,
@@ -77,12 +83,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
           isDense: true,
           hintText: widget.hintText,
-          fillColor: widget.fillColor != null ? widget.fillColor : Theme.of(context).cardColor,
-          hintStyle: Theme.of(context).textTheme.headline2.copyWith(fontSize: Dimensions.FONT_SIZE_SMALL, color: ColorResources.COLOR_GREY_CHATEAU),
+          fillColor: widget.fillColor != null
+              ? widget.fillColor
+              : Theme.of(context).cardColor,
+          hintStyle: Theme.of(context).textTheme.headline2.copyWith(
+              fontSize: Dimensions.FONT_SIZE_SMALL,
+              color: ColorResources.COLOR_GREY_CHATEAU),
           filled: true,
           prefixIcon: widget.isShowPrefixIcon
               ? Padding(
-                  padding: const EdgeInsets.only(left: Dimensions.PADDING_SIZE_LARGE, right: Dimensions.PADDING_SIZE_SMALL),
+                  padding: const EdgeInsets.only(
+                      left: Dimensions.PADDING_SIZE_LARGE,
+                      right: Dimensions.PADDING_SIZE_SMALL),
                   child: Image.asset(widget.prefixIconUrl),
                 )
               : SizedBox.shrink(),
@@ -90,11 +102,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
           suffixIcon: widget.isShowSuffixIcon
               ? widget.isPassword
                   ? IconButton(
-                      icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off, color: Theme.of(context).hintColor.withOpacity(.3)),
+                      icon: Icon(
+                          _obscureText
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Theme.of(context).hintColor.withOpacity(.3)),
                       onPressed: _toggle)
                   : widget.isIcon
                       ? Padding(
-                          padding: const EdgeInsets.only(left: Dimensions.PADDING_SIZE_LARGE, right: Dimensions.PADDING_SIZE_SMALL),
+                          padding: const EdgeInsets.only(
+                              left: Dimensions.PADDING_SIZE_LARGE,
+                              right: Dimensions.PADDING_SIZE_SMALL),
                           child: Image.asset(
                             widget.suffixIconUrl,
                             width: 15,
@@ -105,7 +123,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
               : null,
         ),
         onTap: widget.onTap,
-        onSubmitted: (text) => widget.nextFocus != null ? FocusScope.of(context).requestFocus(widget.nextFocus) : null,
+        onSubmitted: (text) => widget.nextFocus != null
+            ? FocusScope.of(context).requestFocus(widget.nextFocus)
+            : null,
       ),
     );
   }

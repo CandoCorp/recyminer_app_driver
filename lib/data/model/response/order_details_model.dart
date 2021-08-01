@@ -1,4 +1,4 @@
-import 'package:grocery_delivery_boy/data/model/response/product_model.dart';
+import 'package:recyminer_miner/data/model/response/product_model.dart';
 
 class OrderDetailsModel {
   int _id;
@@ -17,18 +17,18 @@ class OrderDetailsModel {
 
   OrderDetailsModel(
       {int id,
-        int productId,
-        int orderId,
-        double price,
-        ProductDetails productDetails,
-        List<Variation> variation,
-        double discountOnProduct,
-        String discountType,
-        int quantity,
-        double taxAmount,
-        String createdAt,
-        String updatedAt,
-        String variant}) {
+      int productId,
+      int orderId,
+      double price,
+      ProductDetails productDetails,
+      List<Variation> variation,
+      double discountOnProduct,
+      String discountType,
+      int quantity,
+      double taxAmount,
+      String createdAt,
+      String updatedAt,
+      String variant}) {
     this._id = id;
     this._productId = productId;
     this._orderId = orderId;
@@ -126,23 +126,23 @@ class ProductDetails {
 
   ProductDetails(
       {int id,
-        String name,
-        String description,
-        List<String> image,
-        double price,
-        List<Variations> variations,
-        double tax,
-        String availableTimeStarts,
-        String availableTimeEnds,
-        int status,
-        String createdAt,
-        String updatedAt,
-        List<String> attributes,
-        List<CategoryIds> categoryIds,
-        List<ChoiceOptions> choiceOptions,
-        double discount,
-        String discountType,
-        String taxType}) {
+      String name,
+      String description,
+      List<String> image,
+      double price,
+      List<Variations> variations,
+      double tax,
+      String availableTimeStarts,
+      String availableTimeEnds,
+      int status,
+      String createdAt,
+      String updatedAt,
+      List<String> attributes,
+      List<CategoryIds> categoryIds,
+      List<ChoiceOptions> choiceOptions,
+      double discount,
+      String discountType,
+      String taxType}) {
     this._id = id;
     this._name = name;
     this._description = description;

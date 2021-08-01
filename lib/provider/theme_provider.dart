@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:grocery_delivery_boy/utill/app_constants.dart';
+import 'package:recyminer_miner/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
@@ -21,6 +21,4 @@ class ThemeProvider with ChangeNotifier {
     _darkTheme = sharedPreferences.getBool(AppConstants.THEME) ?? false;
     notifyListeners();
   }
-
-
 }

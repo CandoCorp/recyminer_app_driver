@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/error_response.dart';
-import 'package:grocery_delivery_boy/data/repository/auth_repo.dart';
-import 'package:grocery_delivery_boy/data/repository/response_model.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/data/model/response/base/error_response.dart';
+import 'package:recyminer_miner/data/repository/auth_repo.dart';
+import 'package:recyminer_miner/data/repository/response_model.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthRepo authRepo;
@@ -22,11 +22,13 @@ class AuthProvider with ChangeNotifier {
     _isLoading = true;
     _loginErrorMessage = '';
     notifyListeners();
-    ApiResponse apiResponse = await authRepo.login(emailAddress: emailAddress, password: password);
+    ApiResponse apiResponse =
+        await authRepo.login(emailAddress: emailAddress, password: password);
     _isLoading = false;
     notifyListeners();
     ResponseModel responseModel;
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
       Map map = apiResponse.response.data;
       String token = map["token"];
       authRepo.saveUserToken(token);
@@ -51,8 +53,8 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> updateToken() async {
     ApiResponse apiResponse = await authRepo.updateToken();
-    if (apiResponse.response != null && apiResponse.response.statusCode == 200) {
-
+    if (apiResponse.response != null &&
+        apiResponse.response.statusCode == 200) {
     } else {
       String errorMessage;
       if (apiResponse.error is String) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
 
 const rubikRegular = TextStyle(
   fontFamily: 'Rubik',

@@ -1,4 +1,4 @@
-import 'package:grocery_delivery_boy/data/model/response/product_model.dart';
+import 'package:recyminer_miner/data/model/response/product_model.dart';
 
 class PlaceOrderBody {
   List<Cart> _cart;
@@ -9,10 +9,10 @@ class PlaceOrderBody {
 
   PlaceOrderBody(
       {List<Cart> cart,
-        double couponDiscountAmount,
-        String couponDiscountTitle,
-        double orderAmount,
-        int deliveryAddressId}) {
+      double couponDiscountAmount,
+      String couponDiscountTitle,
+      double orderAmount,
+      int deliveryAddressId}) {
     this._cart = cart;
     this._couponDiscountAmount = couponDiscountAmount;
     this._couponDiscountTitle = couponDiscountTitle;
@@ -64,13 +64,13 @@ class Cart {
 
   Cart(
       String productId,
-        String price,
-        String variant,
-        List<Variation> variation,
-        double discountAmount,
-        int quantity,
-        double taxAmount,
-        List<int> addOnIds) {
+      String price,
+      String variant,
+      List<Variation> variation,
+      double discountAmount,
+      int quantity,
+      double taxAmount,
+      List<int> addOnIds) {
     this._productId = productId;
     this._price = price;
     this._variant = variant;

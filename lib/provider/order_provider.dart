@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/error_response.dart';
-import 'package:grocery_delivery_boy/data/model/response/order_details_model.dart';
-import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
-import 'package:grocery_delivery_boy/data/model/response/timeslot_model.dart';
-import 'package:grocery_delivery_boy/data/repository/order_repo.dart';
-import 'package:grocery_delivery_boy/data/repository/response_model.dart';
-import 'package:grocery_delivery_boy/helper/api_checker.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/data/model/response/base/error_response.dart';
+import 'package:recyminer_miner/data/model/response/order_details_model.dart';
+import 'package:recyminer_miner/data/model/response/order_model.dart';
+import 'package:recyminer_miner/data/model/response/timeslot_model.dart';
+import 'package:recyminer_miner/data/repository/order_repo.dart';
+import 'package:recyminer_miner/data/repository/response_model.dart';
+import 'package:recyminer_miner/helper/api_checker.dart';
 
 import '../data/model/response/order_model.dart';
 

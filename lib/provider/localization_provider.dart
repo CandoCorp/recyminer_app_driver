@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/utill/app_constants.dart';
+import 'package:recyminer_miner/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalizationProvider extends ChangeNotifier {
@@ -18,9 +18,9 @@ class LocalizationProvider extends ChangeNotifier {
 
   void setLanguage(Locale locale) {
     _locale = locale;
-    if(_locale.languageCode == 'ar') {
+    if (_locale.languageCode == 'ar') {
       _isLtr = false;
-    }else {
+    } else {
       _isLtr = true;
     }
     _saveLanguage(_locale);
@@ -28,13 +28,16 @@ class LocalizationProvider extends ChangeNotifier {
   }
 
   _loadCurrentLanguage() async {
-    _locale = Locale(sharedPreferences.getString(AppConstants.LANGUAGE_CODE) ?? 'en', sharedPreferences.getString(AppConstants.COUNTRY_CODE) ?? 'US');
+    _locale = Locale(
+        sharedPreferences.getString(AppConstants.LANGUAGE_CODE) ?? 'en',
+        sharedPreferences.getString(AppConstants.COUNTRY_CODE) ?? 'US');
     _isLtr = _locale.languageCode == 'en';
     notifyListeners();
   }
 
   _saveLanguage(Locale locale) async {
-    sharedPreferences.setString(AppConstants.LANGUAGE_CODE, locale.languageCode);
+    sharedPreferences.setString(
+        AppConstants.LANGUAGE_CODE, locale.languageCode);
     sharedPreferences.setString(AppConstants.COUNTRY_CODE, locale.countryCode);
   }
 }

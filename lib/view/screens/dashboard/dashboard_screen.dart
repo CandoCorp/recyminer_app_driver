@@ -1,15 +1,15 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:grocery_delivery_boy/view/screens/maps/map_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/notification/my_notification.dart';
-import 'package:grocery_delivery_boy/provider/order_provider.dart';
-import 'package:grocery_delivery_boy/utill/color_resources.dart';
-import 'package:grocery_delivery_boy/view/screens/home/home_screen.dart';
-import 'package:grocery_delivery_boy/view/screens/order/order_history_screen.dart';
-import 'package:grocery_delivery_boy/view/screens/profile/profile_screen.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/notification/my_notification.dart';
+import 'package:recyminer_miner/provider/order_provider.dart';
+import 'package:recyminer_miner/utill/color_resources.dart';
+import 'package:recyminer_miner/view/screens/home/home_screen.dart';
+import 'package:recyminer_miner/view/screens/maps/map_screen.dart';
+import 'package:recyminer_miner/view/screens/order/order_history_screen.dart';
+import 'package:recyminer_miner/view/screens/profile/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -35,13 +35,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     var androidInitialize = AndroidInitializationSettings('notification_icon');
     var iOSInitialize = IOSInitializationSettings();
-    var initializationsSettings = InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
+    var initializationsSettings =
+        InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin.initialize(initializationsSettings);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("onMessage: ${message.data}");
-      MyNotification.showNotification(message.data, flutterLocalNotificationsPlugin);
+      MyNotification.showNotification(
+          message.data, flutterLocalNotificationsPlugin);
       Provider.of<OrderProvider>(context, listen: false).getAllOrders(context);
     });
   }
@@ -89,7 +91,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   BottomNavigationBarItem _barItem(IconData icon, String label, int index) {
     return BottomNavigationBarItem(
-      icon: Icon(icon, color: index == _pageIndex ? Theme.of(context).primaryColor : ColorResources.COLOR_GREY, size: 20),
+      icon: Icon(icon,
+          color: index == _pageIndex
+              ? Theme.of(context).primaryColor
+              : ColorResources.COLOR_GREY,
+          size: 20),
       label: label,
     );
   }

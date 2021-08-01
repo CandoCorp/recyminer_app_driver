@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/data/model/response/language_model.dart';
-import 'package:grocery_delivery_boy/data/repository/language_repo.dart';
+import 'package:recyminer_miner/data/model/response/language_model.dart';
+import 'package:recyminer_miner/data/repository/language_repo.dart';
 
 class LanguageProvider with ChangeNotifier {
   final LanguageRepo languageRepo;

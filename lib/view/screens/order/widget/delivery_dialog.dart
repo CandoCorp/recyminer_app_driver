@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
-import 'package:grocery_delivery_boy/helper/price_converter.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/provider/auth_provider.dart';
-import 'package:grocery_delivery_boy/provider/order_provider.dart';
-import 'package:grocery_delivery_boy/provider/tracker_provider.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
-import 'package:grocery_delivery_boy/view/base/custom_button.dart';
-import 'package:grocery_delivery_boy/view/screens/order/order_details_screen.dart';
-import 'package:grocery_delivery_boy/view/screens/order/order_place_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:recyminer_miner/data/model/response/order_model.dart';
+import 'package:recyminer_miner/helper/price_converter.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/provider/auth_provider.dart';
+import 'package:recyminer_miner/provider/order_provider.dart';
+import 'package:recyminer_miner/provider/tracker_provider.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/images.dart';
+import 'package:recyminer_miner/view/base/custom_button.dart';
+import 'package:recyminer_miner/view/screens/order/order_details_screen.dart';
+import 'package:recyminer_miner/view/screens/order/order_place_screen.dart';
 
 class DeliveryDialog extends StatelessWidget {
   final Function onTap;
@@ -18,7 +18,11 @@ class DeliveryDialog extends StatelessWidget {
   final int index;
   final double totalPrice;
 
-  DeliveryDialog({@required this.onTap, this.totalPrice, this.orderModel, @required this.index});
+  DeliveryDialog(
+      {@required this.onTap,
+      this.totalPrice,
+      this.orderModel,
+      @required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +32,11 @@ class DeliveryDialog extends StatelessWidget {
         decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(Dimensions.PADDING_SIZE_SMALL),
-            border: Border.all(color: Theme.of(context).primaryColor, width: 0.2)),
+            border:
+                Border.all(color: Theme.of(context).primaryColor, width: 0.2)),
         child: Stack(
-          clipBehavior: Clip.none, children: [
+          clipBehavior: Clip.none,
+          children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -40,13 +46,17 @@ class DeliveryDialog extends StatelessWidget {
                 Center(
                     child: Text(
                   getTranslated('do_you_collect_money', context),
-                  style: Theme.of(context).textTheme.headline3.copyWith(color: Theme.of(context).focusColor),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline3
+                      .copyWith(color: Theme.of(context).focusColor),
                 )),
                 SizedBox(height: 20),
                 Center(
                     child: Text(
                   PriceConverter.convertPrice(context, totalPrice),
-                  style: Theme.of(context).textTheme.headline3.copyWith(color: Theme.of(context).focusColor,fontSize: 30),
+                  style: Theme.of(context).textTheme.headline3.copyWith(
+                      color: Theme.of(context).focusColor, fontSize: 30),
                 )),
                 SizedBox(height: 20),
                 Row(
@@ -57,32 +67,56 @@ class DeliveryDialog extends StatelessWidget {
                       isShowBorder: true,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => OrderDetailsScreen(orderModel: orderModel, index: index)));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (_) => OrderDetailsScreen(
+                                orderModel: orderModel, index: index)));
                       },
                     )),
                     SizedBox(width: Dimensions.PADDING_SIZE_DEFAULT),
-                    Expanded(
-                        child: Consumer<OrderProvider>(
+                    Expanded(child: Consumer<OrderProvider>(
                       builder: (context, order, child) {
-                        return !order.isLoading ? CustomButton(
-                          btnTxt: getTranslated('yes', context),
-                          onTap: () {
-                            Provider.of<TrackerProvider>(context, listen: false).stopLocationService();
-                            Provider.of<OrderProvider>(context, listen: false).updateOrderStatus(
-                                token: Provider.of<AuthProvider>(context, listen: false).getUserToken(),
-                                orderId: orderModel.id,
-                                index: index,
-                                status: 'delivered').then((value) {
-                              if (value.isSuccess) {
-                                order.updatePaymentStatus(
-                                    token: Provider.of<AuthProvider>(context, listen: false).getUserToken(), orderId: orderModel.id, status: 'paid');
-                                Provider.of<OrderProvider>(context, listen: false).getAllOrders(context);
-                                Navigator.of(context)
-                                    .pushReplacement(MaterialPageRoute(builder: (_) => OrderPlaceScreen(orderID: orderModel.id.toString())));
-                              }
-                            });
-                          },
-                        ) : Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor)));
+                        return !order.isLoading
+                            ? CustomButton(
+                                btnTxt: getTranslated('yes', context),
+                                onTap: () {
+                                  Provider.of<TrackerProvider>(context,
+                                          listen: false)
+                                      .stopLocationService();
+                                  Provider.of<OrderProvider>(context,
+                                          listen: false)
+                                      .updateOrderStatus(
+                                          token: Provider.of<AuthProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .getUserToken(),
+                                          orderId: orderModel.id,
+                                          index: index,
+                                          status: 'delivered')
+                                      .then((value) {
+                                    if (value.isSuccess) {
+                                      order.updatePaymentStatus(
+                                          token: Provider.of<AuthProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .getUserToken(),
+                                          orderId: orderModel.id,
+                                          status: 'paid');
+                                      Provider.of<OrderProvider>(context,
+                                              listen: false)
+                                          .getAllOrders(context);
+                                      Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                              builder: (_) => OrderPlaceScreen(
+                                                  orderID: orderModel.id
+                                                      .toString())));
+                                    }
+                                  });
+                                },
+                              )
+                            : Center(
+                                child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Theme.of(context).primaryColor)));
                       },
                     )),
                   ],
@@ -97,7 +131,9 @@ class DeliveryDialog extends StatelessWidget {
                   icon: Icon(Icons.clear, size: Dimensions.PADDING_SIZE_LARGE),
                   onPressed: () {
                     Navigator.pop(context);
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => OrderDetailsScreen(orderModel: orderModel, index: index)));
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (_) => OrderDetailsScreen(
+                            orderModel: orderModel, index: index)));
                   }),
             ),
           ],

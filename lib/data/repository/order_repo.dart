@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:grocery_delivery_boy/data/datasource/remote/dio/dio_client.dart';
-import 'package:grocery_delivery_boy/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/utill/app_constants.dart';
+import 'package:recyminer_miner/data/datasource/remote/dio/dio_client.dart';
+import 'package:recyminer_miner/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderRepo {

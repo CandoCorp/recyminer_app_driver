@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/provider/theme_provider.dart';
-import 'package:grocery_delivery_boy/utill/color_resources.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
 import 'package:provider/provider.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/provider/theme_provider.dart';
+import 'package:recyminer_miner/utill/color_resources.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
 
 class StatusWidget extends StatelessWidget {
   @override
@@ -25,10 +25,11 @@ class StatusWidget extends StatelessWidget {
                               child: Text(
                             getTranslated('dark', context),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline2.copyWith(
-                                  color: ColorResources.COLOR_WHITE,
-                                  fontSize: Dimensions.FONT_SIZE_SMALL,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.headline2.copyWith(
+                                      color: ColorResources.COLOR_WHITE,
+                                      fontSize: Dimensions.FONT_SIZE_SMALL,
+                                    ),
                           )),
                           Padding(
                             padding: const EdgeInsets.all(1.0),
@@ -60,10 +61,11 @@ class StatusWidget extends StatelessWidget {
                               child: Text(
                             getTranslated('light', context),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline2.copyWith(
-                                  color: ColorResources.COLOR_WHITE,
-                                  fontSize: Dimensions.FONT_SIZE_SMALL,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.headline2.copyWith(
+                                      color: ColorResources.COLOR_WHITE,
+                                      fontSize: Dimensions.FONT_SIZE_SMALL,
+                                    ),
                           )),
                         ],
                       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
 
 class PermissionDialog extends StatelessWidget {
   final bool isDenied;
@@ -10,12 +10,15 @@ class PermissionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(getTranslated('alert', context)),
-      content: Text(getTranslated(isDenied ? 'you_denied' : 'you_denied_forever', context)),
+      content: Text(getTranslated(
+          isDenied ? 'you_denied' : 'you_denied_forever', context)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      actions: [ElevatedButton(
-        onPressed: onPressed,
-        child: Text(getTranslated(isDenied ? 'ok' : 'settings', context)),
-      )],
+      actions: [
+        ElevatedButton(
+          onPressed: onPressed,
+          child: Text(getTranslated(isDenied ? 'ok' : 'settings', context)),
+        )
+      ],
     );
   }
 }

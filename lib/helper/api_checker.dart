@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/provider/splash_provider.dart';
-import 'package:grocery_delivery_boy/view/screens/auth/login_screen.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/provider/splash_provider.dart';
+import 'package:recyminer_miner/view/screens/auth/login_screen.dart';
 
 class ApiChecker {
   static void checkApi(BuildContext context, ApiResponse apiResponse) {
-    if(apiResponse.error is! String && (apiResponse.error.errors[0].message == 'Unauthenticated.' || apiResponse.error.errors[0].message == 'Invalid token!')) {
+    if (apiResponse.error is! String &&
+        (apiResponse.error.errors[0].message == 'Unauthenticated.' ||
+            apiResponse.error.errors[0].message == 'Invalid token!')) {
       Provider.of<SplashProvider>(context, listen: false).removeSharedData();
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => LoginScreen()), (route) => false);
-    }else {
+      Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (_) => LoginScreen()), (route) => false);
+    } else {
       String _errorMessage;
       if (apiResponse.error is String) {
         _errorMessage = apiResponse.error.toString();

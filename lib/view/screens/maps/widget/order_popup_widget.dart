@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/provider/auth_provider.dart';
-import 'package:grocery_delivery_boy/provider/localization_provider.dart';
-import 'package:grocery_delivery_boy/provider/order_provider.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
-import 'package:grocery_delivery_boy/view/base/custom_button.dart';
-import 'package:grocery_delivery_boy/view/screens/order/order_details_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:recyminer_miner/data/model/response/order_model.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/provider/auth_provider.dart';
+import 'package:recyminer_miner/provider/localization_provider.dart';
+import 'package:recyminer_miner/provider/order_provider.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/images.dart';
+import 'package:recyminer_miner/view/base/custom_button.dart';
+import 'package:recyminer_miner/view/screens/order/order_details_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OrderPopupWidget extends StatelessWidget {

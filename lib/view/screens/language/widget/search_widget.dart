@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/provider/language_provider.dart';
-import 'package:grocery_delivery_boy/utill/color_resources.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
 import 'package:provider/provider.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/provider/language_provider.dart';
+import 'package:recyminer_miner/utill/color_resources.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/images.dart';
 
 class SearchWidget extends StatelessWidget {
   @override
@@ -15,7 +15,9 @@ class SearchWidget extends StatelessWidget {
         onChanged: (String query) {
           searchProvider.searchLanguage(query, context);
         },
-        style: Theme.of(context).textTheme.headline2.copyWith(color: ColorResources.COLOR_BLACK, fontSize: Dimensions.FONT_SIZE_LARGE),
+        style: Theme.of(context).textTheme.headline2.copyWith(
+            color: ColorResources.COLOR_BLACK,
+            fontSize: Dimensions.FONT_SIZE_LARGE),
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 9, horizontal: 10),
@@ -26,10 +28,14 @@ class SearchWidget extends StatelessWidget {
           isDense: true,
           hintText: getTranslated('find_language', context),
           fillColor: ColorResources.COLOR_WHITE,
-          hintStyle: Theme.of(context).textTheme.headline2.copyWith(fontSize: Dimensions.FONT_SIZE_SMALL, color: ColorResources.COLOR_GREY_CHATEAU),
+          hintStyle: Theme.of(context).textTheme.headline2.copyWith(
+              fontSize: Dimensions.FONT_SIZE_SMALL,
+              color: ColorResources.COLOR_GREY_CHATEAU),
           filled: true,
           suffixIcon: Padding(
-            padding: const EdgeInsets.only(left: Dimensions.PADDING_SIZE_LARGE, right: Dimensions.PADDING_SIZE_SMALL),
+            padding: const EdgeInsets.only(
+                left: Dimensions.PADDING_SIZE_LARGE,
+                right: Dimensions.PADDING_SIZE_SMALL),
             child: Image.asset(Images.search, width: 15, height: 15),
           ),
         ),

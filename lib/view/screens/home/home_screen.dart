@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:grocery_delivery_boy/data/model/response/order_model.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/provider/order_provider.dart';
-import 'package:grocery_delivery_boy/provider/profile_provider.dart';
-import 'package:grocery_delivery_boy/provider/splash_provider.dart';
-import 'package:grocery_delivery_boy/provider/tracker_provider.dart';
-import 'package:grocery_delivery_boy/utill/color_resources.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
-import 'package:grocery_delivery_boy/view/screens/home/widget/order_widget.dart';
-import 'package:grocery_delivery_boy/view/screens/language/choose_language_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:grocery_delivery_boy/view/screens/order/widget/permission_dialog.dart';
+import 'package:recyminer_miner/data/model/response/order_model.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/provider/order_provider.dart';
+import 'package:recyminer_miner/provider/profile_provider.dart';
+import 'package:recyminer_miner/provider/splash_provider.dart';
+import 'package:recyminer_miner/provider/tracker_provider.dart';
+import 'package:recyminer_miner/utill/color_resources.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/images.dart';
+import 'package:recyminer_miner/view/screens/home/widget/order_widget.dart';
+import 'package:recyminer_miner/view/screens/language/choose_language_screen.dart';
+import 'package:recyminer_miner/view/screens/order/widget/permission_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +31,14 @@ class HomeScreen extends StatelessWidget {
         actions: [
           Consumer<OrderProvider>(
             builder: (context, orderProvider, child) {
-              if(orderProvider.currentOrders != null) {
-                for(OrderModel order in orderProvider.currentOrders) {
-                  if(order.orderStatus == 'out_for_delivery') {
+              if (orderProvider.currentOrders != null) {
+                for (OrderModel order in orderProvider.currentOrders) {
+                  if (order.orderStatus == 'out_for_delivery') {
                     _checkPermission(context, () {
-                      Provider.of<TrackerProvider>(context, listen: false).setOrderID(order.id);
-                      Provider.of<TrackerProvider>(context, listen: false).startLocationService();
+                      Provider.of<TrackerProvider>(context, listen: false)
+                          .setOrderID(order.id);
+                      Provider.of<TrackerProvider>(context, listen: false)
+                          .startLocationService();
                     });
                     break;
                   }
@@ -43,17 +46,21 @@ class HomeScreen extends StatelessWidget {
               }
               return orderProvider.currentOrders.length > 0
                   ? SizedBox.shrink()
-                  : IconButton(icon: Icon(Icons.refresh, color: Theme.of(context).textTheme.bodyText1.color),
-                  onPressed: () {
-                    orderProvider.refresh(context);
-                  });
+                  : IconButton(
+                      icon: Icon(Icons.refresh,
+                          color: Theme.of(context).textTheme.bodyText1.color),
+                      onPressed: () {
+                        orderProvider.refresh(context);
+                      });
             },
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
                 case 'language':
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChooseLanguageScreen(fromHomeScreen: true)));
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          ChooseLanguageScreen(fromHomeScreen: true)));
               }
             },
             icon: Icon(
@@ -65,11 +72,13 @@ class HomeScreen extends StatelessWidget {
                 value: 'language',
                 child: Row(
                   children: [
-                    Icon(Icons.language, color: Theme.of(context).textTheme.bodyText1.color),
+                    Icon(Icons.language,
+                        color: Theme.of(context).textTheme.bodyText1.color),
                     SizedBox(width: Dimensions.PADDING_SIZE_LARGE),
                     Text(
                       getTranslated('change_language', context),
-                      style: Theme.of(context).textTheme.headline2.copyWith(color: Theme.of(context).textTheme.bodyText1.color),
+                      style: Theme.of(context).textTheme.headline2.copyWith(
+                          color: Theme.of(context).textTheme.bodyText1.color),
                     ),
                   ],
                 ),
@@ -79,35 +88,39 @@ class HomeScreen extends StatelessWidget {
         ],
         leading: SizedBox.shrink(),
         title: Consumer<ProfileProvider>(
-          builder: (context, profileProvider, child) => profileProvider.userInfoModel != null
-              ? Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(shape: BoxShape.circle),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: FadeInImage.assetNetwork(
-                          placeholder: Images.placeholder_user,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.fill,
-                          image: '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}',
+          builder: (context, profileProvider, child) =>
+              profileProvider.userInfoModel != null
+                  ? Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(shape: BoxShape.circle),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: FadeInImage.assetNetwork(
+                              placeholder: Images.placeholder_user,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.fill,
+                              image:
+                                  '${Provider.of<SplashProvider>(context, listen: false).baseUrls.deliveryManImageUrl}/${profileProvider.userInfoModel.image}',
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Text(
-                      profileProvider.userInfoModel.fName != null
-                          ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
-                          : "",
-                      style:
-                          Theme.of(context).textTheme.headline3.copyWith(fontSize: Dimensions.FONT_SIZE_LARGE, color: Theme.of(context).textTheme.bodyText1.color),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          profileProvider.userInfoModel.fName != null
+                              ? '${profileProvider.userInfoModel.fName ?? ''} ${profileProvider.userInfoModel.lName ?? ''}'
+                              : "",
+                          style: Theme.of(context).textTheme.headline3.copyWith(
+                              fontSize: Dimensions.FONT_SIZE_LARGE,
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color),
+                        )
+                      ],
                     )
-                  ],
-                )
-              : SizedBox.shrink(),
+                  : SizedBox.shrink(),
         ),
       ),
       body: Consumer<OrderProvider>(
@@ -117,28 +130,32 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(getTranslated('active_order', context),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline3
-                            .copyWith(fontSize: Dimensions.FONT_SIZE_LARGE, color: Theme.of(context).accentColor)),
+                        style: Theme.of(context).textTheme.headline3.copyWith(
+                            fontSize: Dimensions.FONT_SIZE_LARGE,
+                            color: Theme.of(context).accentColor)),
                     SizedBox(height: 10),
                     Expanded(
-
                       child: RefreshIndicator(
                         child: orderProvider.currentOrders != null
                             ? orderProvider.currentOrders.length != 0
                                 ? ListView.builder(
-                                    itemCount: orderProvider.currentOrders.length,
-                                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                                    itemBuilder: (context, index) => OrderWidget(
-                                      orderModel: orderProvider.currentOrders[index],
+                                    itemCount:
+                                        orderProvider.currentOrders.length,
+                                    physics: const BouncingScrollPhysics(
+                                        parent:
+                                            AlwaysScrollableScrollPhysics()),
+                                    itemBuilder: (context, index) =>
+                                        OrderWidget(
+                                      orderModel:
+                                          orderProvider.currentOrders[index],
                                       index: index,
                                     ),
                                   )
                                 : Center(
                                     child: Text(
                                       getTranslated('no_order_found', context),
-                                      style: Theme.of(context).textTheme.headline3,
+                                      style:
+                                          Theme.of(context).textTheme.headline3,
                                     ),
                                   )
                             : SizedBox.shrink(),
@@ -159,22 +176,32 @@ class HomeScreen extends StatelessWidget {
 
   void _checkPermission(BuildContext context, Function callback) async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied) {
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if(permission == LocationPermission.denied) {
-      showDialog(context: context, barrierDismissible: false, builder: (context) => PermissionDialog(isDenied: true, onPressed: () async {
-        Navigator.pop(context);
-        await Geolocator.requestPermission();
-        _checkPermission(context, callback);
-      }));
-    }else if(permission == LocationPermission.deniedForever) {
-      showDialog(context: context, barrierDismissible: false, builder: (context) => PermissionDialog(isDenied: false, onPressed: () async {
-        Navigator.pop(context);
-        await Geolocator.openAppSettings();
-        _checkPermission(context, callback);
-      }));
-    }else {
+    if (permission == LocationPermission.denied) {
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => PermissionDialog(
+              isDenied: true,
+              onPressed: () async {
+                Navigator.pop(context);
+                await Geolocator.requestPermission();
+                _checkPermission(context, callback);
+              }));
+    } else if (permission == LocationPermission.deniedForever) {
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => PermissionDialog(
+              isDenied: false,
+              onPressed: () async {
+                Navigator.pop(context);
+                await Geolocator.openAppSettings();
+                _checkPermission(context, callback);
+              }));
+    } else {
       callback();
     }
   }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_delivery_boy/localization/language_constrants.dart';
-import 'package:grocery_delivery_boy/utill/dimensions.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
-import 'package:grocery_delivery_boy/view/base/custom_button.dart';
-import 'package:grocery_delivery_boy/view/screens/dashboard/dashboard_screen.dart';
+import 'package:recyminer_miner/localization/language_constrants.dart';
+import 'package:recyminer_miner/utill/dimensions.dart';
+import 'package:recyminer_miner/utill/images.dart';
+import 'package:recyminer_miner/view/base/custom_button.dart';
+import 'package:recyminer_miner/view/screens/dashboard/dashboard_screen.dart';
 
 class OrderPlaceScreen extends StatelessWidget {
   final String orderID;
@@ -27,7 +27,9 @@ class OrderPlaceScreen extends StatelessWidget {
               SizedBox(height: 20),
               Text(
                 'Order Successfully Delivered',
-                style: Theme.of(context).textTheme.headline3.copyWith(fontSize: Dimensions.FONT_SIZE_LARGE, color: Theme.of(context).accentColor),
+                style: Theme.of(context).textTheme.headline3.copyWith(
+                    fontSize: Dimensions.FONT_SIZE_LARGE,
+                    color: Theme.of(context).accentColor),
               ),
               SizedBox(height: 10),
               Row(
@@ -35,11 +37,17 @@ class OrderPlaceScreen extends StatelessWidget {
                 children: [
                   Text(
                     getTranslated('order_id', context),
-                    style: Theme.of(context).textTheme.headline2.copyWith(color: Theme.of(context).accentColor),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline2
+                        .copyWith(color: Theme.of(context).accentColor),
                   ),
                   Text(
                     ' #$orderID',
-                    style: Theme.of(context).textTheme.headline3.copyWith(color: Theme.of(context).accentColor),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline3
+                        .copyWith(color: Theme.of(context).accentColor),
                   ),
                 ],
               ),
@@ -47,7 +55,9 @@ class OrderPlaceScreen extends StatelessWidget {
               CustomButton(
                 btnTxt: getTranslated('back_home', context),
                 onTap: () {
-                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => DashboardScreen()), (route) => false);
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => DashboardScreen()),
+                      (route) => false);
                 },
               )
             ],

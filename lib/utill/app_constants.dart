@@ -1,5 +1,5 @@
-import 'package:grocery_delivery_boy/data/model/response/language_model.dart';
-import 'package:grocery_delivery_boy/utill/images.dart';
+import 'package:recyminer_miner/data/model/response/language_model.dart';
+import 'package:recyminer_miner/utill/images.dart';
 
 class AppConstants {
   static const String APP_NAME = 'GroFresh Delivery Boy';

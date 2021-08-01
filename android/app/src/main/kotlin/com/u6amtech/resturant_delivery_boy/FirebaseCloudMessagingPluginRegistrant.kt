@@ -1,4 +1,4 @@
-package com.u6amtech.grocery_delivery_boy
+package com.recyminer.miner
 
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingPlugin

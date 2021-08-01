@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:grocery_delivery_boy/data/datasource/remote/dio/dio_client.dart';
-import 'package:grocery_delivery_boy/data/datasource/remote/exception/api_error_handler.dart';
-import 'package:grocery_delivery_boy/data/model/response/base/api_response.dart';
-import 'package:grocery_delivery_boy/utill/app_constants.dart';
+import 'package:recyminer_miner/data/datasource/remote/dio/dio_client.dart';
+import 'package:recyminer_miner/data/datasource/remote/exception/api_error_handler.dart';
+import 'package:recyminer_miner/data/model/response/base/api_response.dart';
+import 'package:recyminer_miner/utill/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepo {
@@ -26,12 +26,13 @@ class AuthRepo {
     }
   }
 
-
-
   // for  user token
   Future<void> saveUserToken(String token) async {
     dioClient.token = token;
-    dioClient.dio.options.headers = {'Content-Type': 'application/json; charset=UTF-8', 'Authorization': 'Bearer $token'};
+    dioClient.dio.options.headers = {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer $token'
+    };
 
     try {
       await sharedPreferences.setString(AppConstants.TOKEN, token);
@@ -44,19 +45,29 @@ class AuthRepo {
     try {
       String _deviceToken;
       if (!Platform.isAndroid) {
-        NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-          alert: true, announcement: false, badge: true, carPlay: false,
-          criticalAlert: false, provisional: false, sound: true,
+        NotificationSettings settings =
+            await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
         );
-        if(settings.authorizationStatus == AuthorizationStatus.authorized) {
+        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
           _deviceToken = await _saveDeviceToken();
         }
-      }else {
+      } else {
         _deviceToken = await _saveDeviceToken();
       }
       Response response = await dioClient.post(
         AppConstants.TOKEN_URI,
-        data: {"_method": "put", "fcm_token": _deviceToken, "token": sharedPreferences.get(AppConstants.TOKEN)},
+        data: {
+          "_method": "put",
+          "fcm_token": _deviceToken,
+          "token": sharedPreferences.get(AppConstants.TOKEN)
+        },
       );
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -67,7 +78,7 @@ class AuthRepo {
   Future<String> _saveDeviceToken() async {
     String _deviceToken = await FirebaseMessaging.instance.getToken();
     if (_deviceToken != null) {
-      print('--------Device Token---------- '+_deviceToken);
+      print('--------Device Token---------- ' + _deviceToken);
     }
     return _deviceToken;
   }
