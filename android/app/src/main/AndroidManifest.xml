@@ -12,7 +12,7 @@
 
     <application
         android:name=".Application"
-        android:label="GroFresh Delivery Boy"
+        android:label="Recyminer Miner"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">

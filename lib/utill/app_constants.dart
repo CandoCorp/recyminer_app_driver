@@ -2,7 +2,7 @@ import 'package:recyminer_miner/data/model/response/language_model.dart';
 import 'package:recyminer_miner/utill/images.dart';
 
 class AppConstants {
-  static const String APP_NAME = 'GroFresh Delivery Boy';
+  static const String APP_NAME = 'Miner';
 
   static const String BASE_URL = 'http://192.168.100.35:81';
   static const String PROFILE_URI = '/api/v1/delivery-man/profile?token=';
