@@ -16,23 +16,26 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  get_it: ^6.0.0
-  provider: ^5.0.0
+  get_it: ^7.1.3
+  provider: ^6.0.1
   shared_preferences: ^2.0.5
   dio: ^4.0.0-prev3
   google_maps_flutter: ^2.0.1
   geolocator: ^7.4.0
   geocoding: ^2.0.0
   url_launcher: ^6.0.2
-  firebase_core: ^1.0.1
+  firebase_core: ^1.7.0
   firebase_messaging: ^10.0.0
   flutter_local_notifications: ^5.0.0
   path_provider: ^2.0.1
   vibration: ^1.7.4-nullsafety.0
   shimmer: ^2.0.0-nullsafety.0
-  flutter_map: any
+  flutter_map: ^0.13.1
   flutter_map_marker_cluster: ^0.4.0 # or the latest version on Pub
   latlong2: ^0.8.0
+  cloud_firestore: ^2.5.3
+  rxdart: ^0.27.2
+  geoflutterfire: ^3.0.1
 
 dev_dependencies:
   flutter_test:

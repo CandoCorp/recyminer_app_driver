@@ -1,4 +1,4 @@
-// @dart=2.9
+// @dart=2.12.3
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -28,9 +28,9 @@ import 'package:recyminer_miner/view/screens/maps/widget/order_popup_widget.dart
 import 'package:recyminer_miner/view/screens/maps/widget/zoombuttons_plugin.dart';
 import 'package:recyminer_miner/view/screens/order/widget/permission_dialog.dart';
 
-import '../../../data/model/response/location_order_model.dart';
-import '../../../data/model/response/order_model.dart';
-import '../../../provider/location_order_provider.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rxdart/rxdart.dart';
 
 class MapScreen extends StatelessWidget {
   // This widget is the root of your application.
@@ -191,8 +191,8 @@ class MapWidget extends StatefulWidget {
 }
 
 class _MapWidgetState extends State<MapWidget> {
-  final PopupController _popupController = PopupController();
-  final MapController _mapController = MapController();
+  PopupController _popupController = PopupController();
+  MapController _mapController = MapController();
 
   LocationOrderProvider provider;
   OrderProvider _orderProvider;
@@ -215,6 +215,19 @@ class _MapWidgetState extends State<MapWidget> {
   Map _layerStates;
   ValueNotifier _layerStatesNotifier;
 
+  // Firestore init
+  final _firestore = FirebaseFirestore.instance;
+  Geoflutterfire geo;
+
+  Stream<List<DocumentSnapshot>> stream;
+  var radius = BehaviorSubject<double>.seeded(100.0);
+
+  // Stateful Data
+  // Stream<dynamic> query;
+
+  // Subscription
+  StreamSubscription subscription;
+
   @override
   void initState() {
     super.initState();
@@ -222,15 +235,9 @@ class _MapWidgetState extends State<MapWidget> {
     _layerStates = {0: true, 1: true};
     _markerOrder = {'orders': [], 'mining': []};
 
-    _layerStatesNotifier = new ValueNotifier(_layerStates);
-    _layerStatesNotifier.addListener(() {
-      setState(() {
-        _filterDataPoints();
-      });
-    });
+    geo = Geoflutterfire();
 
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((position) {
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
       _markers.insert(
           0,
@@ -250,6 +257,20 @@ class _MapWidgetState extends State<MapWidget> {
                 );
                 return Icon(Icons.pin_drop_outlined);
               }));
+    });
+
+    GeoFirePoint center = geo.point(latitude: 12.960632, longitude: 77.641603);
+    stream = radius.switchMap((rad) {
+      var collectionReference = _firestore.collection('locations');
+      return geo.collection(collectionRef: collectionReference).within(
+          center: center, radius: rad, field: 'position', strictMode: true);
+    });
+
+    _layerStatesNotifier = new ValueNotifier(_layerStates);
+    _layerStatesNotifier.addListener(() {
+      setState(() {
+        _filterDataPoints();
+      });
     });
 
     provider = Provider.of<LocationOrderProvider>(context, listen: false);
@@ -288,6 +309,7 @@ class _MapWidgetState extends State<MapWidget> {
   void dispose() {
     _timer.cancel();
     _layerStatesNotifier.dispose();
+    radius.close();
     super.dispose();
   }
 
@@ -299,169 +321,231 @@ class _MapWidgetState extends State<MapWidget> {
     });
 
     return _currentLocation != null
-        ? Scaffold(
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  if (_currentLocation != null)
-                    _mapController.move(_currentLocation, _currentZoom);
-                });
-              },
-              child: Icon(Icons.refresh),
-            ),
-            body: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                center: _currentLocation != null
-                    ? _currentLocation
-                    : LatLng(-2.0, -79.00),
-                zoom: _currentZoom,
-                maxZoom: _maxZoom,
-                plugins: [
-                  MarkerClusterPlugin(),
-                  MarkerClusterPlugin(),
-                  ZoomButtonsPlugin(),
-                  LayerChooserPlugin()
+        ? Stack(
+            // floatingActionButton: FloatingActionButton(
+            //   onPressed: () {
+            //     setState(() {
+            //       if (_currentLocation != null)
+            //         _mapController.move(_currentLocation, _currentZoom);
+            //     });
+            //   },
+            //   child: Icon(Icons.refresh),
+            // ),
+            children: [
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  center: _currentLocation != null
+                      ? _currentLocation
+                      : LatLng(-2.0, -79.00),
+                  zoom: _currentZoom,
+                  maxZoom: _maxZoom,
+                  plugins: [
+                    MarkerClusterPlugin(),
+                    MarkerClusterPlugin(),
+                    ZoomButtonsPlugin(),
+                    LayerChooserPlugin()
+                  ],
+                  onTap: (_) => _popupController
+                      .hidePopup(), // Hide popup when the map is tapped.
+                  onMapCreated: _onMapCreated
+                ),
+                layers: [
+                  TileLayerOptions(
+                    urlTemplate:
+                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains: ['a', 'b', 'c'],
+                  ),
+                  MarkerLayerOptions(markers: _markers),
+                  MarkerClusterLayerOptions(
+                    maxClusterRadius: 120,
+                    size: Size(40, 40),
+                    anchor: AnchorPos.align(AnchorAlign.center),
+                    fitBoundsOptions: FitBoundsOptions(
+                      padding: EdgeInsets.all(50),
+                    ),
+                    markers: _layerStates[0]
+                        ? List.castFrom(_markerOrder['orders'])
+                        : [],
+                    polygonOptions: PolygonOptions(
+                        borderColor: Colors.blueAccent,
+                        color: Colors.black12,
+                        borderStrokeWidth: 3),
+                    popupOptions: PopupOptions(
+                        popupSnap: PopupSnap.markerTop,
+                        popupController: _popupController,
+                        popupBuilder: (_, marker) => Container(
+                              width: 300,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Theme.of(context)
+                                            .shadowColor
+                                            .withOpacity(.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: Offset(0, 1))
+                                  ],
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(
+                                      Dimensions.PADDING_SIZE_SMALL)),
+                              child: GestureDetector(
+                                  onTap: () => debugPrint('Popup tap!'),
+                                  child: Consumer<OrderProvider>(
+                                      builder: (context, orderProvider, child) {
+                                    if (_orderProvider.pendingOrders != null &&
+                                        _orderProvider.pendingOrders.length != 0)
+                                      return OrderWidget(
+                                        orderModel: _fetchOrderModel(marker.key),
+                                        index: _markersClustered.indexWhere(
+                                            (_marker) =>
+                                                _marker.key == marker.key),
+                                      );
+                                    return SizedBox.shrink();
+                                  })),
+                            )),
+                    builder: (context, markers) {
+                      return FloatingActionButton(
+                        onPressed: null,
+                        child: Text(markers.length.toString()),
+                      );
+                    },
+                  ),
+                  MarkerClusterLayerOptions(
+                    maxClusterRadius: 12,
+                    size: Size(20, 20),
+                    anchor: AnchorPos.align(AnchorAlign.center),
+                    fitBoundsOptions: FitBoundsOptions(
+                      padding: EdgeInsets.all(50),
+                    ),
+                    markers: _layerStates[1]
+                        ? List.castFrom(_markerOrder['mining'])
+                        : [],
+                    polygonOptions: PolygonOptions(
+                        borderColor: Colors.blueAccent,
+                        color: Colors.green,
+                        borderStrokeWidth: 3),
+                    popupOptions: PopupOptions(
+                        popupSnap: PopupSnap.markerTop,
+                        popupController: _popupController,
+                        popupBuilder: (_, marker) => Container(
+                              width: 300,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Theme.of(context)
+                                            .shadowColor
+                                            .withOpacity(.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: Offset(0, 1))
+                                  ],
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(
+                                      Dimensions.PADDING_SIZE_SMALL)),
+                              child: GestureDetector(
+                                  onTap: () => debugPrint('Popup tap!'),
+                                  child: Consumer<OrderProvider>(
+                                      builder: (context, orderProvider, child) {
+                                    if (_orderProvider.pendingOrders != null &&
+                                        _orderProvider.pendingOrders.length != 0)
+                                      return OrderPopupWidget(
+                                        orderModel: _fetchOrderModel(marker.key),
+                                        isPending: true,
+                                      );
+                                    return SizedBox.shrink();
+                                  })),
+                            )),
+                    builder: (context, markers) {
+                      return FloatingActionButton(
+                        onPressed: null,
+                        child: Text(markers.length.toString()),
+                        backgroundColor: Colors.green,
+                      );
+                    },
+                  ),
                 ],
-                onTap: (_) => _popupController
-                    .hidePopup(), // Hide popup when the map is tapped.
-              ),
-              layers: [
-                TileLayerOptions(
-                  urlTemplate:
-                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                MarkerLayerOptions(markers: _markers),
-                MarkerClusterLayerOptions(
-                  maxClusterRadius: 120,
-                  size: Size(40, 40),
-                  anchor: AnchorPos.align(AnchorAlign.center),
-                  fitBoundsOptions: FitBoundsOptions(
-                    padding: EdgeInsets.all(50),
-                  ),
-                  markers: _layerStates[0]
-                      ? List.castFrom(_markerOrder['orders'])
-                      : [],
-                  polygonOptions: PolygonOptions(
-                      borderColor: Colors.blueAccent,
-                      color: Colors.black12,
-                      borderStrokeWidth: 3),
-                  popupOptions: PopupOptions(
-                      popupSnap: PopupSnap.markerTop,
-                      popupController: _popupController,
-                      popupBuilder: (_, marker) => Container(
-                            width: 300,
-                            height: 180,
-                            decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Theme.of(context)
-                                          .shadowColor
-                                          .withOpacity(.5),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: Offset(0, 1))
-                                ],
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(
-                                    Dimensions.PADDING_SIZE_SMALL)),
-                            child: GestureDetector(
-                                onTap: () => debugPrint('Popup tap!'),
-                                child: Consumer<OrderProvider>(
-                                    builder: (context, orderProvider, child) {
-                                  if (_orderProvider.pendingOrders != null &&
-                                      _orderProvider.pendingOrders.length != 0)
-                                    return OrderWidget(
-                                      orderModel: _fetchOrderModel(marker.key),
-                                      index: _markersClustered.indexWhere(
-                                          (_marker) =>
-                                              _marker.key == marker.key),
-                                    );
-                                  return SizedBox.shrink();
-                                })),
-                          )),
-                  builder: (context, markers) {
-                    return FloatingActionButton(
-                      onPressed: null,
-                      child: Text(markers.length.toString()),
-                    );
-                  },
-                ),
-                MarkerClusterLayerOptions(
-                  maxClusterRadius: 12,
-                  size: Size(20, 20),
-                  anchor: AnchorPos.align(AnchorAlign.center),
-                  fitBoundsOptions: FitBoundsOptions(
-                    padding: EdgeInsets.all(50),
-                  ),
-                  markers: _layerStates[1]
-                      ? List.castFrom(_markerOrder['mining'])
-                      : [],
-                  polygonOptions: PolygonOptions(
-                      borderColor: Colors.blueAccent,
-                      color: Colors.green,
-                      borderStrokeWidth: 3),
-                  popupOptions: PopupOptions(
-                      popupSnap: PopupSnap.markerTop,
-                      popupController: _popupController,
-                      popupBuilder: (_, marker) => Container(
-                            width: 300,
-                            height: 180,
-                            decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Theme.of(context)
-                                          .shadowColor
-                                          .withOpacity(.5),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: Offset(0, 1))
-                                ],
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(
-                                    Dimensions.PADDING_SIZE_SMALL)),
-                            child: GestureDetector(
-                                onTap: () => debugPrint('Popup tap!'),
-                                child: Consumer<OrderProvider>(
-                                    builder: (context, orderProvider, child) {
-                                  if (_orderProvider.pendingOrders != null &&
-                                      _orderProvider.pendingOrders.length != 0)
-                                    return OrderPopupWidget(
-                                      orderModel: _fetchOrderModel(marker.key),
-                                      isPending: true,
-                                    );
-                                  return SizedBox.shrink();
-                                })),
-                          )),
-                  builder: (context, markers) {
-                    return FloatingActionButton(
-                      onPressed: null,
-                      child: Text(markers.length.toString()),
-                      backgroundColor: Colors.green,
-                    );
-                  },
-                ),
-              ],
-              nonRotatedLayers: [
-                ZoomButtonsPluginOption(
-                  minZoom: 5,
-                  maxZoom: 15,
-                  mini: false,
-                  padding: 10,
-                  alignment: Alignment.topRight,
-                ),
-                LayerChooserPluginOptions(
+                nonRotatedLayers: [
+                  ZoomButtonsPluginOption(
+                    minZoom: 5,
+                    maxZoom: 15,
                     mini: false,
                     padding: 10,
-                    layerState: _layerStates,
-                    mapState: _layerStatesNotifier)
-              ],
-            ))
+                    alignment: Alignment.topRight,
+                  ),
+                  LayerChooserPluginOptions(
+                      mini: false,
+                      padding: 10,
+                      layerState: _layerStates,
+                      mapState: _layerStatesNotifier)
+                ],
+              ),
+              Positioned(
+                  bottom: 50,
+                  left: 10,
+                  child: Slider(
+                    min: 100.0,
+                    max: 500.0,
+                    divisions: 4,
+                    value: radius.value,
+                    label: 'Radius ${radius.value}km',
+                    activeColor: Colors.green,
+                    inactiveColor: Colors.green.withOpacity(0.2),
+                    onChanged: _updateQuery,
+                  )
+              )
+            ])
         : Center(
             child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(
                     Theme.of(context).primaryColor)));
+  }
+
+  _onMapCreated(MapController controller){
+    _startQuery();
+    setState(() {
+      _mapController = controller;
+    });
+  }
+
+  _startQuery() async {
+    double lat = _currentLocation.latitude;
+    double lng = _currentLocation.longitude;
+
+    var ref = _firestore.collection('locations');
+    GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
+
+    //subscribe to query
+    subscription = radius.switchMap((rad) {
+      return geo.collection(collectionRef: ref).within(center: center, radius: rad, field: 'position', strictMode: true);
+    }).listen(_updateMarkers);
+
+  }
+
+  _updateQuery(value){
+    final zoomMap = {
+      100.0: 12.0,
+      200.0: 10.0,
+      300.0: 8.0,
+      400.0: 6.0,
+      500.0: 5.0
+    };
+    final zoom = zoomMap[value];
+    _mapController.move(_currentLocation, zoom);
+
+    setState(() {
+      radius.add(value);
+    });
+  }
+
+  void _updateMarkers(List<DocumentSnapshot> documentList){
+    // _mapController.
+    documentList.forEach((DocumentSnapshot document) {
+      GeoPoint point = document['position']['geopoint'];
+      double distance = document.data();
+    });
   }
 
   void _fetchOrderDataPoints(BuildContext context) {
