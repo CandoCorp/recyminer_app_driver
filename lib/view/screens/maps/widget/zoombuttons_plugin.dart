@@ -76,9 +76,9 @@ class ZoomButtons extends StatelessWidget {
               onPressed: () {
                 var bounds = map.getBounds();
                 var centerZoom = map.getBoundsCenterZoom(bounds, options);
-                double zoom = centerZoom.zoom + 1.0;
-                if (zoom < zoomButtonsOpts.minZoom) {
-                  zoom = zoomButtonsOpts.minZoom;
+                var zoom = centerZoom.zoom + 1.0;
+                if (zoom > zoomButtonsOpts.maxZoom) {
+                  zoom = zoomButtonsOpts.maxZoom;
                 } else {
                   map.move(centerZoom.center, zoom,
                       source: MapEventSource.custom);
@@ -97,9 +97,10 @@ class ZoomButtons extends StatelessWidget {
               onPressed: () {
                 var bounds = map.getBounds();
                 var centerZoom = map.getBoundsCenterZoom(bounds, options);
+
                 var zoom = centerZoom.zoom - 1.0;
-                if (zoom > zoomButtonsOpts.maxZoom) {
-                  zoom = zoomButtonsOpts.maxZoom;
+                if (zoom < zoomButtonsOpts.minZoom) {
+                  zoom = zoomButtonsOpts.minZoom;
                 } else {
                   map.move(centerZoom.center, zoom,
                       source: MapEventSource.custom);

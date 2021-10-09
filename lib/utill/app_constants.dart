@@ -4,7 +4,7 @@ import 'package:recyminer_miner/utill/images.dart';
 class AppConstants {
   static const String APP_NAME = 'Miner';
 
-  static const String BASE_URL = 'http://192.168.100.35:81';
+  static const String BASE_URL = 'http://192.241.149.51:81';
   static const String PROFILE_URI = '/api/v1/delivery-man/profile?token=';
   static const String CONFIG_URI = '/api/v1/config';
   static const String LOGIN_URI = '/api/v1/auth/delivery-man/login';
