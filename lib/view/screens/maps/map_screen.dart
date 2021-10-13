@@ -146,9 +146,11 @@ class MapScreen extends StatelessWidget {
         drawer: buildDrawer(context, route),
         body: Padding(
           padding: EdgeInsets.all(2.0),
-          child: Column(
-            children: [Flexible(child: MapWidget())],
-          ),
+          child: MapWidget(),
+          // child: Column(
+            // children: [Flexible(child: MapWidget())],
+            // children: [MapWidget()],
+          // ),
         ));
   }
 
@@ -215,18 +217,12 @@ class _MapWidgetState extends State<MapWidget> {
   Map _layerStates;
   ValueNotifier _layerStatesNotifier;
 
-  // Firestore init
+  // Firestore init realtime test
   final _firestore = FirebaseFirestore.instance;
   Geoflutterfire geo;
-
   Stream<List<DocumentSnapshot>> stream;
-  var radius = BehaviorSubject<double>.seeded(100.0);
-
-  // Stateful Data
-  // Stream<dynamic> query;
-
-  // Subscription
-  StreamSubscription subscription;
+  final radius = BehaviorSubject<double>.seeded(100.0);
+  Map<Key, Marker> markers = <Key, Marker>{};
 
   @override
   void initState() {
@@ -234,8 +230,6 @@ class _MapWidgetState extends State<MapWidget> {
 
     _layerStates = {0: true, 1: true};
     _markerOrder = {'orders': [], 'mining': []};
-
-    geo = Geoflutterfire();
 
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((position) {
       _currentLocation = LatLng(position.latitude, position.longitude);
@@ -259,7 +253,9 @@ class _MapWidgetState extends State<MapWidget> {
               }));
     });
 
-    GeoFirePoint center = geo.point(latitude: 12.960632, longitude: 77.641603);
+    geo = Geoflutterfire();
+
+    GeoFirePoint center = geo.point(latitude: -2.00, longitude: -80.00);
     stream = radius.switchMap((rad) {
       var collectionReference = _firestore.collection('locations');
       return geo.collection(collectionRef: collectionReference).within(
@@ -315,22 +311,8 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((position) {
-      _currentLocation = LatLng(position.latitude, position.longitude);
-    });
-
     return _currentLocation != null
         ? Stack(
-            // floatingActionButton: FloatingActionButton(
-            //   onPressed: () {
-            //     setState(() {
-            //       if (_currentLocation != null)
-            //         _mapController.move(_currentLocation, _currentZoom);
-            //     });
-            //   },
-            //   child: Icon(Icons.refresh),
-            // ),
             children: [
               FlutterMap(
                 mapController: _mapController,
@@ -493,7 +475,7 @@ class _MapWidgetState extends State<MapWidget> {
                     label: 'Radius ${radius.value}km',
                     activeColor: Colors.green,
                     inactiveColor: Colors.green.withOpacity(0.2),
-                    onChanged: _updateQuery,
+                    onChanged: changed,
                   )
               )
             ])
@@ -503,51 +485,66 @@ class _MapWidgetState extends State<MapWidget> {
                     Theme.of(context).primaryColor)));
   }
 
+  // For Realtime methods
   _onMapCreated(MapController controller){
-    _startQuery();
     setState(() {
-      _mapController = controller;
+      _mapController = controller; // Is this redundant?
+      stream.listen((List<DocumentSnapshot> documentList) { _updateMarkers(documentList); });
     });
   }
 
-  _startQuery() async {
-    double lat = _currentLocation.latitude;
-    double lng = _currentLocation.longitude;
+  double _value = 40.0;
+  String _label = '';
 
-    var ref = _firestore.collection('locations');
-    GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
-
-    //subscribe to query
-    subscription = radius.switchMap((rad) {
-      return geo.collection(collectionRef: ref).within(center: center, radius: rad, field: 'position', strictMode: true);
-    }).listen(_updateMarkers);
-
-  }
-
-  _updateQuery(value){
-    final zoomMap = {
-      100.0: 12.0,
-      200.0: 10.0,
-      300.0: 8.0,
-      400.0: 6.0,
-      500.0: 5.0
-    };
-    final zoom = zoomMap[value];
-    _mapController.move(_currentLocation, zoom);
-
+  changed(value) {
     setState(() {
+      _value = value;
+      _label = '${_value.toInt().toString()} kms';
+      markers.clear();
       radius.add(value);
     });
   }
+  //
+  // _updateQuery(value){
+  //   final zoomMap = {
+  //     100.0: 12.0,
+  //     200.0: 10.0,
+  //     300.0: 8.0,
+  //     400.0: 6.0,
+  //     500.0: 5.0
+  //   };
+  //   final zoom = zoomMap[value];
+  //   _mapController.move(_currentLocation, zoom);
+  //
+  //   setState(() {
+  //     radius.add(value);
+  //   });
+  // }
 
   void _updateMarkers(List<DocumentSnapshot> documentList){
-    // _mapController.
     documentList.forEach((DocumentSnapshot document) {
-      GeoPoint point = document['position']['geopoint'];
-      double distance = document.data();
+      final GeoPoint point = document['position']['geopoint'];
+      _addMarker(point.latitude, point.longitude);
+      // double distance = document.data();
     });
   }
 
+  void _addMarker(double lat, double lng) {
+    final id = Key(lat.toString() + ';' +  lng.toString());
+    final _marker = Marker(
+      anchorPos: AnchorPos.align(AnchorAlign.center),
+      height: 40,
+      width: 40,
+      point: LatLng(lat, lng),
+      key: id,
+      builder: (ctx) { return Icon(Icons.pin_drop_outlined); }
+    );
+    setState(() {
+      markers[id] = _marker;
+    });
+  }
+
+  // Finish realtime methods
   void _fetchOrderDataPoints(BuildContext context) {
     provider.getAllAvailableOrders(context);
   }
